@@ -5,29 +5,29 @@
 }
 
 html {
+  min-width: 320px;
   scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  min-width: 320px;
   background: var(--color-background);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
-  font-size: 16px;
+  font-size: var(--text-base);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
 button,
 input,
-textarea,
-select {
+select,
+textarea {
   font: inherit;
 }
 
 button {
-  cursor: pointer;
+  color: inherit;
 }
 
 a {
@@ -37,11 +37,11 @@ a {
 
 img,
 svg {
-  max-width: 100%;
+  display: block;
 }
 
 img {
-  display: block;
+  max-width: 100%;
 }
 
 h1,
@@ -60,31 +60,23 @@ h4 {
   letter-spacing: -0.025em;
 }
 
-.container {
-  width: min(
-    calc(100% - 40px),
-    var(--container-width)
-  );
-
-  margin-inline: auto;
-}
-
-:focus-visible {
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
   outline: 3px solid var(--color-brand);
   outline-offset: 3px;
 }
 
-::selection {
-  background: #dbe7ff;
-  color: var(--color-text-primary);
+.container {
+  width: min(calc(100% - 48px), var(--container-width));
+  margin-inline: auto;
 }
 
 @media (max-width: 640px) {
   .container {
-    width: min(
-      calc(100% - 32px),
-      var(--container-width)
-    );
+    width: calc(100% - 32px);
   }
 }
 
