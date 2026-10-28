@@ -198,11 +198,13 @@ export default function LandingPage() {
 
       <footer className="landing-footer">
         <div className="container landing-footer__inner">
-          <Link to="/" className="landing-footer__brand">
-            <span className="landing-footer__brand-mark">
-              <Code2 size={17} />
-            </span>{" "}
-            SkillBridge
+          <Link to="/" className="navbar__brand" aria-label="SkillBridge home">
+            <img
+              src="/images/skillbridge-logo.png"
+              alt="SkillBridge"
+              className="navbar__logo"
+            />
+            <span className="navbar__brand-name">SkillBridge</span>
           </Link>
           <p>Built for people who want to learn by building together.</p>
           <div className="landing-footer__links">

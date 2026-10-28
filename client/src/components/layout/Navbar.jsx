@@ -18,37 +18,13 @@ export default function Navbar() {
   return (
     <header className="site-header">
       <div className="site-header__inner container">
-        <Link
-          to="/"
-          className="brand"
-          aria-label="SkillBridge home"
-          onClick={closeMenu}
-        >
-          <span className="brand__mark" aria-hidden="true">
-            <svg
-              viewBox="0 0 32 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect
-                x="2"
-                y="2"
-                width="28"
-                height="28"
-                rx="8"
-                fill="currentColor"
-              />
-              <path
-                d="M10 11H22M10 16H16M16 16L22 21M16 16L10 21"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
-
-          <span className="brand__name">SkillBridge</span>
+        <Link to="/" className="navbar__brand" aria-label="SkillBridge home">
+          <img
+            src="/images/skillbridge-logo.png"
+            alt="SkillBridge"
+            className="navbar__logo"
+          />
+          <span className="navbar__brand-name">SkillBridge</span>
         </Link>
 
         <button

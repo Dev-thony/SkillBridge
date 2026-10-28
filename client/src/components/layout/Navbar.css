@@ -256,3 +256,38 @@
     height: 38px;
   }
 }
+
+.navbar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.navbar__logo {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.navbar__brand-name {
+  color: var(--color-text-primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .navbar__logo {
+    width: 34px;
+    height: 34px;
+  }
+
+  .navbar__brand-name {
+    font-size: 1.1rem;
+  }
+}
