@@ -1,0 +1,416 @@
+.explore-page {
+  min-height: calc(100vh - var(--header-height));
+  background: var(--color-background);
+  padding: clamp(42px, 7vw, 88px) 0 90px;
+  color: var(--color-text-primary);
+}
+.explore-page__container {
+  max-width: var(--container-width);
+}
+.explore-page__eyebrow {
+  color: var(--color-brand);
+  font-size: 0.75rem;
+  letter-spacing: 0.11em;
+  font-weight: 750;
+  margin: 0 0 12px;
+}
+.explore-page__heading h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  margin: 0 0 12px;
+}
+.explore-page__heading > p:last-child {
+  color: var(--color-text-secondary);
+  max-width: 650px;
+  line-height: 1.6;
+  margin: 0;
+}
+.explore-page__browser {
+  margin-top: 42px;
+}
+.explore-page__toolbar {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: stretch;
+}
+.explore-page__search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 16px;
+  flex: 1;
+  max-width: 570px;
+  color: var(--color-text-muted);
+}
+.explore-page__search:focus-within {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+.explore-page__search input {
+  min-width: 0;
+  width: 100%;
+  padding: 8px 0;
+  border: 0;
+  outline: 0;
+  font: inherit;
+  background: transparent;
+  color: var(--color-text-primary);
+}
+.explore-page__filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--color-text-secondary);
+}
+.explore-page__filters select {
+  padding: 12px 32px 12px 12px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  border-radius: var(--radius-md);
+  font: inherit;
+  color: var(--color-text-primary);
+  max-width: 100%;
+}
+.explore-page__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 35px 0 18px;
+}
+.explore-page__meta h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+.explore-page__meta h2 span {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+.explore-page__demo-label {
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+}
+.explore-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.explore-page__empty {
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  padding: 70px 20px;
+  background: #fff;
+}
+.explore-page__empty h3 {
+  margin: 0 0 8px;
+}
+.explore-page__empty p {
+  color: var(--color-text-secondary);
+}
+.explore-page__empty button {
+  cursor: pointer;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-brand);
+  color: #fff;
+  padding: 11px 18px;
+  font: inherit;
+}
+.explore-page__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(15 20 42 / 55%);
+}
+.explore-page__dialog {
+  width: min(100%, 550px);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  position: relative;
+  box-shadow: var(--shadow-dropdown);
+}
+.explore-page__dialog h2 {
+  margin: 0 0 12px;
+}
+.explore-page__dialog h3 {
+  font-size: 0.95rem;
+  margin: 22px 0 6px;
+}
+.explore-page__dialog p {
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+.explore-page__dialog .explore-page__eyebrow {
+  color: var(--color-brand);
+}
+.explore-page__close {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px;
+}
+.explore-page__notice {
+  background: var(--color-brand-soft);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  font-size: 0.9rem;
+}
+@media (max-width: 800px) {
+  .explore-page__toolbar {
+    flex-direction: column;
+  }
+  .explore-page__search {
+    max-width: none;
+  }
+  .explore-page__filters {
+    flex-wrap: wrap;
+  }
+  .explore-page__grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 480px) {
+  .explore-page__filters > svg {
+    display: none;
+  }
+  .explore-page__filters label {
+    flex: 1;
+    min-width: 0;
+  }
+  .explore-page__filters select {
+    width: 100%;
+  }
+  .explore-page__meta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .explore-page__dialog {
+    padding: 24px;
+  }
+}
+
+/* =========================================
+   EXPLORE PROJECTS — RESPONSIVE REFINEMENTS
+   ========================================= */
+
+.explore-page {
+  width: 100%;
+  min-width: 0;
+}
+
+.explore-page__container,
+.explore-page__browser {
+  min-width: 0;
+}
+
+.explore-page__grid > * {
+  min-width: 0;
+}
+
+/* =========================================
+   LARGE DESKTOP
+   ========================================= */
+
+@media (min-width: 1440px) {
+  .explore-page {
+    padding-top: 80px;
+  }
+
+  .explore-page__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+/* =========================================
+   TABLET AND SMALL LAPTOP
+   ========================================= */
+
+@media (min-width: 761px) and (max-width: 1100px) {
+  .explore-page {
+    padding-top: 56px;
+  }
+
+  .explore-page__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .explore-page__search {
+    width: 100%;
+    max-width: none;
+  }
+
+  .explore-page__filters {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .explore-page__grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+/* =========================================
+   MOBILE AND TABLET PORTRAIT
+   ========================================= */
+
+@media (max-width: 760px) {
+  .explore-page {
+    padding: 36px 0 64px;
+  }
+
+  .explore-page__heading h1 {
+    font-size: clamp(27px, 6vw, 36px);
+    line-height: 1.2;
+  }
+
+  .explore-page__heading > p:last-child {
+    max-width: 500px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .explore-page__browser {
+    margin-top: 30px;
+  }
+
+  .explore-page__toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .explore-page__search {
+    width: 100%;
+    max-width: none;
+    min-height: 44px;
+  }
+
+  .explore-page__search input {
+    min-width: 0;
+    font-size: 13px;
+  }
+
+  .explore-page__filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .explore-page__filters label {
+    flex: 1 1 160px;
+    min-width: 0;
+  }
+
+  .explore-page__filters select {
+    width: 100%;
+    min-height: 42px;
+    font-size: 13px;
+  }
+
+  .explore-page__meta {
+    margin: 28px 0 16px;
+  }
+
+  .explore-page__meta h2 {
+    font-size: 18px;
+  }
+
+  .explore-page__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .explore-page__grid .sb-project-card {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* =========================================
+   SMALL MOBILE
+   ========================================= */
+
+@media (max-width: 480px) {
+  .explore-page {
+    padding-top: 28px;
+  }
+
+  .explore-page__eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+
+  .explore-page__heading h1 {
+    font-size: 28px;
+  }
+
+  .explore-page__heading > p:last-child {
+    font-size: 13px;
+  }
+
+  .explore-page__filters > svg {
+    display: none;
+  }
+
+  .explore-page__filters label {
+    flex: 1 1 calc(50% - 5px);
+  }
+
+  .explore-page__filters select {
+    padding: 10px 24px 10px 8px;
+    font-size: 12px;
+  }
+
+  .explore-page__meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .explore-page__demo-label {
+    font-size: 11px;
+  }
+
+  .explore-page__grid {
+    gap: 14px;
+  }
+}
+
+/* =========================================
+   EXTRA-SMALL MOBILE
+   ========================================= */
+
+@media (max-width: 360px) {
+  .explore-page__heading h1 {
+    font-size: 26px;
+  }
+
+  .explore-page__filters {
+    gap: 8px;
+  }
+
+  .explore-page__filters select {
+    font-size: 11px;
+  }
+}
