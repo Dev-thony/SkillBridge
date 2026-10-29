@@ -27,6 +27,19 @@ const userSchema = new mongoose.Schema(
       default: "",
       maxlength: 500,
     },
+    title: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 100,
+    },
+    links: {
+      portfolio: { type: String, default: "" },
+      github: { type: String, default: "" },
+      linkedin: { type: String, default: "" },
+      x: { type: String, default: "" },
+    },
+    avatarUrl: { type: String, default: "" },
     skills: {
       type: [String],
       default: [],

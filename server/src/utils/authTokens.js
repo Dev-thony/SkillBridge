@@ -24,3 +24,13 @@ export function getCookieOptions() {
     maxAge: 24 * 60 * 60 * 1000,
   };
 }
+
+export function getClearedCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: isProduction(),
+    sameSite: "lax",
+    path: "/",
+    expires: new Date(0),
+  };
+}
