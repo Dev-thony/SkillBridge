@@ -54,18 +54,35 @@ function validateProjectBody(body, partial = false) {
 
   if (updates.rolesNeeded) {
     for (const role of updates.rolesNeeded) {
+      if (!role || typeof role !== "object" || Array.isArray(role)) {
+        return "Each required role must be an object.";
+      }
+
       const slots = role.slots ?? 1;
+
       if (
-        !role ||
         typeof role.role !== "string" ||
         !role.role.trim() ||
+        role.role.trim().length > 80 ||
         !Number.isInteger(slots) ||
         slots < 1 ||
         slots > 50
-      )
+      ) {
         return "Each role needs a valid role name and slot count.";
-      if (role.skills !== undefined && !Array.isArray(role.skills))
-        return "Role skills must be an array.";
+      }
+
+      if (
+        role.skills !== undefined &&
+        (!Array.isArray(role.skills) ||
+          !role.skills.every(
+            (skill) =>
+              typeof skill === "string" &&
+              skill.trim().length > 0 &&
+              skill.trim().length <= 50,
+          ))
+      ) {
+        return "Role skills must be an array of valid strings.";
+      }
     }
   }
   return updates;
@@ -81,8 +98,16 @@ export async function listProjects(req, res, next) {
       ["open", "full", "closed"].includes(req.query.status)
     )
       query.status = req.query.status;
-    if (req.query.skill)
-      query.techStack = { $regex: req.query.skill, $options: "i" };
+    if (typeof req.query.skill === "string" && req.query.skill.trim()) {
+      const escapedSkill = req.query.skill
+        .trim()
+        .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+      query.techStack = {
+        $regex: escapedSkill,
+        $options: "i",
+      };
+    }
     if (req.query.search) {
       const escaped = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       query.$or = [
