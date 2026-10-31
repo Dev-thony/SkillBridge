@@ -291,3 +291,24 @@
     font-size: 1.1rem;
   }
 }
+
+/* Authentication navigation */
+
+.navbar__logout {
+  font: inherit;
+  cursor: pointer;
+}
+
+.navbar__logout:focus-visible {
+  outline: 3px solid var(--color-brand-border);
+  outline-offset: 3px;
+}
+
+.navbar__error {
+  margin: 0;
+  padding: 8px 24px;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  font-size: 13px;
+  text-align: center;
+}
