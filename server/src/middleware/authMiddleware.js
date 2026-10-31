@@ -2,63 +2,72 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { COOKIE_NAME } from "../utils/authTokens.js";
 
-function getCookieValue(header, name) {
-  if (!header) return undefined;
-  const cookie = header
-    .split(";")
-    .find((item) => item.trim().startsWith(`${name}=`));
-  return cookie
-    ? decodeURIComponent(cookie.trim().slice(name.length + 1))
-    : undefined;
-}
+export async function requireAuth(req, res, next) {
+  try {
+    const authorization = req.headers.authorization;
 
-export function requireAuth(req, res, next) {
-  const headerToken = req.headers.authorization?.startsWith("Bearer ")
-    ? req.headers.authorization.slice(7)
-    : undefined;
-  const token = headerToken || getCookieValue(req.headers.cookie, COOKIE_NAME);
+    const bearerToken = authorization?.startsWith("Bearer ")
+      ? authorization.slice(7)
+      : null;
 
-  if (!token)
-    return res
-      .status(401)
-      .json({
-        error: { code: "UNAUTHORIZED", message: "Authentication is required." },
+    const cookieToken = req.cookies?.[COOKIE_NAME];
+
+    const token = bearerToken || cookieToken;
+
+    if (!token) {
+      console.warn("[Auth] No session token received.", {
+        path: req.originalUrl,
+        cookieParserAvailable: Boolean(req.cookies),
+        cookieNames: Object.keys(req.cookies || {}),
+        hasAuthorizationHeader: Boolean(authorization),
       });
-  if (!process.env.JWT_SECRET)
-    return next(new Error("JWT_SECRET is not configured"));
 
-  jwt.verify(
-    token,
-    process.env.JWT_SECRET,
-    { algorithms: ["HS256"] },
-    async (error, payload) => {
-      if (error || !payload?.sub) {
-        return res
-          .status(401)
-          .json({
-            error: {
-              code: "UNAUTHORIZED",
-              message: "Your session is invalid or has expired.",
-            },
-          });
-      }
+      return res.status(401).json({
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Authentication is required. Please log in again.",
+        },
+      });
+    }
 
-      try {
-        const user = await User.findById(payload.sub);
-        if (!user)
-          return res
-            .status(401)
-            .json({
-              error: {
-                code: "UNAUTHORIZED",
-                message: "Your session is invalid.",
-              },
-            });
-        req.user = user;
-        next();
-      } catch (verificationError) {
-        next(verificationError);
-      }
-    },
-  );
+    if (!process.env.JWT_SECRET) {
+      console.error("[Auth] JWT_SECRET is not configured.");
+
+      return res.status(500).json({
+        error: {
+          code: "SERVER_ERROR",
+          message: "Authentication configuration is missing.",
+        },
+      });
+    }
+
+    const payload = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
+
+    const user = await User.findById(payload.sub);
+
+    if (!user) {
+      console.warn("[Auth] Token is valid but the user was not found.");
+
+      return res.status(401).json({
+        error: {
+          code: "UNAUTHORIZED",
+          message: "The associated user no longer exists. Please log in again.",
+        },
+      });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error("[Auth] Authentication failed:", error.message);
+
+    return res.status(401).json({
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Your session is invalid or expired. Please log in again.",
+      },
+    });
+  }
 }

@@ -112,6 +112,25 @@ export async function listProjects(req, res, next) {
   }
 }
 
+export async function listOwnProjects(req, res, next) {
+  try {
+    const projects = await Project.find({
+      owner: req.user._id,
+    })
+      .populate("owner", "name title avatarUrl")
+      .populate("members", "name title avatarUrl")
+      .sort({ updatedAt: -1 });
+
+    res.status(200).json({
+      data: {
+        projects,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function createProject(req, res, next) {
   try {
     const result = validateProjectBody(req.body);

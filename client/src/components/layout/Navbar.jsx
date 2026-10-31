@@ -87,7 +87,23 @@ export default function Navbar() {
               (isAuthenticated ? (
                 <>
                   <Link
-                    to="/profile/setup"
+                    to="/dashboard"
+                    className="site-nav__login"
+                    onClick={closeMenu}
+                  >
+                    My Projects
+                  </Link>
+
+                  <Link
+                    to="/applications"
+                    className="site-nav__login"
+                    onClick={closeMenu}
+                  >
+                    My Applications
+                  </Link>
+
+                  <Link
+                    to="/profile"
                     className="site-nav__login"
                     onClick={closeMenu}
                   >

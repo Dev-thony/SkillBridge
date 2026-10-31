@@ -1,33 +1,38 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
+
+const SESSION_MARKER = "skillbridge_has_session";
+
+export function hasKnownSession() {
+  return localStorage.getItem(SESSION_MARKER) === "true";
+}
+
+function markSessionActive() {
+  localStorage.setItem(SESSION_MARKER, "true");
+}
+
+export function clearSessionMarker() {
+  localStorage.removeItem(SESSION_MARKER);
+}
 
 async function apiRequest(path, options = {}) {
-  let response;
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
 
-  try {
-    response = await fetch(`${API_URL}${path}`, {
-      ...options,
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  } catch {
-    throw new Error(
-      "Cannot connect to the server. Check that the backend is running.",
-    );
-  }
-
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     const error = new Error(
-      data.error?.message ||
-        data.message ||
-        `Request failed with status ${response.status}`,
+      data.error?.message || data.message || "Request failed",
     );
 
     error.status = response.status;
+    error.code = data.error?.code;
 
     throw error;
   }
@@ -35,26 +40,55 @@ async function apiRequest(path, options = {}) {
   return data;
 }
 
-export function registerUser(userData) {
-  return apiRequest("/auth/register", {
+export async function registerUser(userData) {
+  const response = await apiRequest("/auth/register", {
     method: "POST",
     body: JSON.stringify(userData),
   });
+
+  markSessionActive();
+  return response;
 }
 
-export function loginUser(credentials) {
-  return apiRequest("/auth/login", {
+export async function loginUser(credentials) {
+  const response = await apiRequest("/auth/login", {
     method: "POST",
     body: JSON.stringify(credentials),
   });
+
+  markSessionActive();
+  return response;
 }
 
-export function logoutUser() {
-  return apiRequest("/auth/logout", {
-    method: "POST",
+export async function logoutUser() {
+  try {
+    return await apiRequest("/auth/logout", {
+      method: "POST",
+    });
+  } finally {
+    clearSessionMarker();
+  }
+}
+
+export async function getCurrentUser() {
+  try {
+    return await apiRequest("/auth/me");
+  } catch (error) {
+    if (error.status === 401) {
+      clearSessionMarker();
+    }
+
+    throw error;
+  }
+}
+
+export function updateOwnProfile(profileData) {
+  return apiRequest("/users/me", {
+    method: "PATCH",
+    body: JSON.stringify(profileData),
   });
 }
 
-export function getCurrentUser() {
-  return apiRequest("/auth/me");
+export function getPublicUser(userId) {
+  return apiRequest(`/users/${encodeURIComponent(userId)}`);
 }

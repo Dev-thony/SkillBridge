@@ -144,133 +144,124 @@ export async function listProjectRequests(req, res, next) {
 }
 
 export async function reviewRequest(req, res, next) {
+  const { requestId } = req.params;
+  const { status } = req.body || {};
+
+  if (!mongoose.isValidObjectId(requestId)) {
+    return res.status(400).json({
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Invalid request identifier.",
+      },
+    });
+  }
+
+  if (!["approved", "declined"].includes(status)) {
+    return res.status(400).json({
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Status must be approved or declined.",
+      },
+    });
+  }
+
+  const session = await mongoose.startSession();
+
   try {
-    if (!mongoose.isValidObjectId(req.params.requestId))
-      return res
-        .status(400)
-        .json({
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Request identifier is invalid.",
-          },
-        });
-    const status = req.body?.status;
-    if (!["approved", "declined"].includes(status))
-      return res
-        .status(400)
-        .json({
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Status must be approved or declined.",
-          },
-        });
+    let reviewedRequest;
 
-    const request = await JoinRequest.findById(req.params.requestId).populate(
-      "project applicant",
-      "owner members memberLimit status name email title skills avatarUrl",
-    );
-    if (!request)
-      return res
-        .status(404)
-        .json({
-          error: { code: "NOT_FOUND", message: "Join request was not found." },
-        });
-    if (request.status !== "pending")
-      return res
-        .status(409)
-        .json({
-          error: {
-            code: "CONFLICT",
-            message: "This join request has already been reviewed.",
-          },
-        });
+    await session.withTransaction(async () => {
+      const request = await JoinRequest.findById(requestId).session(session);
 
-    const project = await Project.findById(request.project._id);
-    if (!project)
-      return res
-        .status(404)
-        .json({
-          error: { code: "NOT_FOUND", message: "Project was not found." },
-        });
-    if (!isOwner(project, req.user))
-      return res
-        .status(403)
-        .json({
-          error: {
-            code: "FORBIDDEN",
-            message: "Only the project owner can review requests.",
-          },
-        });
+      if (!request) {
+        const error = new Error("Join request not found.");
+        error.status = 404;
+        throw error;
+      }
 
-    if (status === "approved") {
-      if (project.status === "closed")
-        return res
-          .status(409)
-          .json({
-            error: {
-              code: "CONFLICT",
-              message: "A closed project cannot accept members.",
-            },
-          });
-      if (project.members.length >= project.memberLimit)
-        return res
-          .status(409)
-          .json({
-            error: { code: "CONFLICT", message: "The project is full." },
-          });
+      if (request.status !== "pending") {
+        const error = new Error("This request has already been reviewed.");
+        error.status = 409;
+        throw error;
+      }
 
-      const updatedProject = await Project.findOneAndUpdate(
-        {
-          _id: project._id,
-          status: { $ne: "closed" },
-          members: { $nin: [request.applicant._id] },
-          $expr: { $lt: [{ $size: "$members" }, "$memberLimit"] },
+      const project = await Project.findById(request.project).session(session);
+
+      if (!project) {
+        const error = new Error("Project not found.");
+        error.status = 404;
+        throw error;
+      }
+
+      if (project.owner.toString() !== req.user._id.toString()) {
+        const error = new Error("Only the project owner can review requests.");
+        error.status = 403;
+        throw error;
+      }
+
+      if (status === "approved") {
+        if (project.status !== "open") {
+          const error = new Error("This project is not accepting members.");
+          error.status = 409;
+          throw error;
+        }
+
+        const alreadyMember = project.members.some(
+          (member) => member.toString() === request.applicant.toString(),
+        );
+
+        if (alreadyMember) {
+          const error = new Error("Applicant is already a project member.");
+          error.status = 409;
+          throw error;
+        }
+
+        if (project.members.length >= project.memberLimit) {
+          const error = new Error("Project is full.");
+          error.status = 409;
+          throw error;
+        }
+
+        project.members.push(request.applicant);
+
+        if (project.members.length >= project.memberLimit) {
+          project.status = "full";
+        }
+
+        await project.save({ session });
+      }
+
+      request.status = status;
+      request.reviewedAt = new Date();
+
+      await request.save({ session });
+
+      reviewedRequest = request;
+    });
+
+    return res.status(200).json({
+      data: {
+        request: reviewedRequest,
+      },
+      message: `Join request ${status}.`,
+    });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({
+        error: {
+          code:
+            error.status === 403
+              ? "FORBIDDEN"
+              : error.status === 404
+                ? "NOT_FOUND"
+                : "CONFLICT",
+          message: error.message,
         },
-        {
-          $addToSet: { members: request.applicant._id },
-          $set: {
-            status:
-              project.members.length + 1 >= project.memberLimit
-                ? "full"
-                : "open",
-          },
-        },
-        { new: true },
-      );
-      if (!updatedProject)
-        return res
-          .status(409)
-          .json({
-            error: {
-              code: "CONFLICT",
-              message:
-                "The project capacity changed or the applicant is already a member.",
-            },
-          });
+      });
     }
 
-    const reviewed = await JoinRequest.findOneAndUpdate(
-      { _id: request._id, status: "pending" },
-      { $set: { status, reviewedAt: new Date() } },
-      { new: true },
-    );
-    if (!reviewed)
-      return res
-        .status(409)
-        .json({
-          error: {
-            code: "CONFLICT",
-            message: "This join request has already been reviewed.",
-          },
-        });
-
-    res
-      .status(200)
-      .json({
-        data: { request: reviewed },
-        message: `Join request ${status}.`,
-      });
-  } catch (error) {
-    next(error);
+    return next(error);
+  } finally {
+    await session.endSession();
   }
 }

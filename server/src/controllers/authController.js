@@ -70,13 +70,16 @@ export async function register(req, res, next) {
       email: cleanEmail,
       password,
     });
-    res.cookie(COOKIE_NAME, createAuthToken(user._id), getCookieOptions());
-    return res
-      .status(201)
-      .json({
-        data: { user: publicUser(user) },
-        message: "Account created successfully.",
-      });
+
+    const token = createAuthToken(user._id);
+
+    res.cookie(COOKIE_NAME, token, getCookieOptions());
+    return res.status(201).json({
+      data: {
+        user: publicUser(user),
+      },
+      message: "Account created successfully.",
+    });
   } catch (error) {
     if (error.code === 11000)
       return res
@@ -111,13 +114,15 @@ export async function login(req, res, next) {
         });
     }
 
-    res.cookie(COOKIE_NAME, createAuthToken(user._id), getCookieOptions());
-    return res
-      .status(200)
-      .json({
-        data: { user: publicUser(user) },
-        message: "Signed in successfully.",
-      });
+    const token = createAuthToken(user._id);
+    
+    res.cookie(COOKIE_NAME, token, getCookieOptions());
+    return res.status(200).json({
+      data: {
+        user: publicUser(user),
+      },
+      message: "Signed in successfully.",
+    });
   } catch (error) {
     next(error);
   }

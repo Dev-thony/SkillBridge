@@ -2,8 +2,6 @@ import jwt from "jsonwebtoken";
 
 export const COOKIE_NAME = "skillbridge_session";
 
-const isProduction = () => process.env.NODE_ENV === "production";
-
 export function createAuthToken(userId) {
   if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET is not configured");
@@ -16,9 +14,11 @@ export function createAuthToken(userId) {
 }
 
 export function getCookieOptions() {
+  const isProduction = process.env.NODE_ENV === "production";
+
   return {
     httpOnly: true,
-    secure: isProduction(),
+    secure: isProduction,
     sameSite: "lax",
     path: "/",
     maxAge: 24 * 60 * 60 * 1000,
@@ -26,11 +26,12 @@ export function getCookieOptions() {
 }
 
 export function getClearedCookieOptions() {
+  const isProduction = process.env.NODE_ENV === "production";
+
   return {
     httpOnly: true,
-    secure: isProduction(),
+    secure: isProduction,
     sameSite: "lax",
     path: "/",
-    expires: new Date(0),
   };
 }

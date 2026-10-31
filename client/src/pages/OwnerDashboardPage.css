@@ -1,0 +1,152 @@
+.owner-dashboard {
+  padding-top: 48px;
+  padding-bottom: 80px;
+}
+
+.owner-dashboard__header,
+.owner-dashboard__project-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.owner-dashboard__header {
+  margin-bottom: 32px;
+}
+
+.owner-dashboard__header h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.owner-dashboard__header p,
+.owner-dashboard__project-heading p {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.owner-dashboard__projects {
+  display: grid;
+  gap: 24px;
+}
+
+.owner-dashboard__project,
+.owner-dashboard__empty {
+  padding: clamp(20px, 4vw, 32px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: #fff;
+}
+
+.owner-dashboard__project-heading {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.owner-dashboard__project-heading h2 {
+  margin: 12px 0;
+}
+
+.owner-dashboard__status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f1f1f5;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+
+.owner-dashboard__status--open {
+  background: #e6f8ee;
+  color: #176b3a;
+}
+
+.owner-dashboard__status--full {
+  background: #fff3d6;
+  color: #7a5200;
+}
+
+.owner-dashboard__status--closed {
+  background: #f1f1f5;
+  color: #56566a;
+}
+
+.owner-dashboard__actions,
+.owner-dashboard__request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.owner-dashboard__actions a,
+.owner-dashboard__actions button {
+  font: inherit;
+}
+
+.owner-dashboard__actions button,
+.owner-dashboard__request-actions button {
+  padding: 9px 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  cursor: pointer;
+}
+
+.owner-dashboard__requests {
+  padding-top: 22px;
+}
+
+.owner-dashboard__requests h3 {
+  margin: 0 0 16px;
+}
+
+.owner-dashboard__request {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 18px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.owner-dashboard__request p {
+  margin: 8px 0 0;
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.owner-dashboard__request-actions button:first-child {
+  background: var(--color-brand);
+  color: #fff;
+}
+
+.owner-dashboard__request-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.owner-dashboard__error {
+  color: #b42318;
+}
+
+.owner-dashboard__notice {
+  color: #176b3a;
+}
+
+.owner-dashboard__empty {
+  text-align: center;
+}
+
+@media (max-width: 650px) {
+  .owner-dashboard__header,
+  .owner-dashboard__project-heading,
+  .owner-dashboard__request {
+    flex-direction: column;
+  }
+
+  .owner-dashboard__request-actions {
+    width: 100%;
+  }
+}

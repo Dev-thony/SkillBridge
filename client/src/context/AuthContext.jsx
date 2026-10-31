@@ -8,24 +8,30 @@ import {
 } from "react";
 
 import {
+  clearSessionMarker,
   getCurrentUser,
+  hasKnownSession,
   loginUser,
   logoutUser,
   registerUser,
+  updateOwnProfile,
 } from "../services/authService";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => hasKnownSession());
 
   const refreshUser = useCallback(async () => {
     try {
       const response = await getCurrentUser();
 
-      setUser(response.data.user);
-      return response.data.user;
+      const currentUser = response.data.user;
+
+      setUser(currentUser);
+
+      return currentUser;
     } catch (error) {
       setUser(null);
 
@@ -40,36 +46,53 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      void refreshUser();
-    }, 0);
-
-    return () => clearTimeout(timeoutId);
+    if (!hasKnownSession()) {
+      return;
+    }
+    // Restore auth state during bootstrap. This intentionally updates state
+    // after the user session is checked, and the lint rule is suppressed here.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void refreshUser();
   }, [refreshUser]);
 
-  async function login(credentials) {
+  const login = useCallback(async (credentials) => {
     const response = await loginUser(credentials);
 
-    setUser(response.data.user);
+    const authenticatedUser = response.data.user;
 
-    return response.data.user;
-  }
+    setUser(authenticatedUser);
 
-  async function register(userData) {
+    return authenticatedUser;
+  }, []);
+
+  const register = useCallback(async (userData) => {
     const response = await registerUser(userData);
 
-    setUser(response.data.user);
+    const authenticatedUser = response.data.user;
 
-    return response.data.user;
-  }
+    setUser(authenticatedUser);
 
-  async function logout() {
+    return authenticatedUser;
+  }, []);
+
+  const updateProfile = useCallback(async (profileData) => {
+    const response = await updateOwnProfile(profileData);
+
+    const updatedUser = response.data.user;
+
+    setUser(updatedUser);
+
+    return updatedUser;
+  }, []);
+
+  const logout = useCallback(async () => {
     try {
       await logoutUser();
     } finally {
+      clearSessionMarker();
       setUser(null);
     }
-  }
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -80,8 +103,9 @@ export function AuthProvider({ children }) {
       register,
       logout,
       refreshUser,
+      updateProfile,
     }),
-    [user, loading, refreshUser],
+    [user, loading, login, register, logout, refreshUser, updateProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
