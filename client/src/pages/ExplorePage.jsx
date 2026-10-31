@@ -82,9 +82,6 @@ export default function ExplorePage() {
           <div className="explore-page__toolbar">
             <label className="explore-page__search">
               <Search size={19} aria-hidden="true" />
-
-              <span className="sr-only">Search projects</span>
-
               <input
                 type="search"
                 value={query}
@@ -96,7 +93,7 @@ export default function ExplorePage() {
             <div className="explore-page__filters">
               <SlidersHorizontal size={18} aria-hidden="true" />
 
-              <label>
+              <label className="explore-page__filters">
                 <span className="sr-only">Project status</span>
 
                 <select
