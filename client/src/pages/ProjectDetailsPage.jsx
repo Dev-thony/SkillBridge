@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Layers3, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, Layers3, Users, XCircle } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
 import { Badge, SkillTag } from "../components/ui";
@@ -9,6 +9,7 @@ import {
   getMyJoinRequests,
   getProject,
   submitJoinRequest,
+  closeProject,
 } from "../services/projectService";
 
 import "./ProjectDetailsPage.css";
@@ -79,6 +80,32 @@ export default function ProjectDetailsPage() {
       setNotice("Your join request has been submitted.");
     } catch (requestError) {
       setError(requestError.message || "Unable to submit your request.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleCloseProject() {
+    const confirmed = window.confirm(
+      "Are you sure you want to close this project? It will no longer appear in Explore Projects.",
+    );
+
+    if (!confirmed) return;
+
+    setSubmitting(true);
+    setError("");
+    setNotice("");
+
+    try {
+      const updatedProject = await closeProject(project.id);
+
+      setProject(updatedProject);
+
+      setNotice(
+        "Project closed successfully. It is no longer accepting applications.",
+      );
+    } catch (closeError) {
+      setError(closeError.message || "Unable to close this project.");
     } finally {
       setSubmitting(false);
     }
@@ -291,12 +318,32 @@ export default function ProjectDetailsPage() {
               {isOwner ? (
                 <>
                   <h3>Your project</h3>
+
                   <p>Manage this project and review incoming join requests.</p>
 
                   <Link className="project-details-join" to="/dashboard">
                     Open dashboard
                     <ArrowRight size={17} aria-hidden="true" />
                   </Link>
+
+                  {project.status !== "closed" && (
+                    <button
+                      type="button"
+                      className="project-details-close"
+                      onClick={handleCloseProject}
+                      disabled={submitting}
+                    >
+                      <XCircle size={17} aria-hidden="true" />
+
+                      {submitting ? "Closing project..." : "Close project"}
+                    </button>
+                  )}
+
+                  {project.status === "closed" && (
+                    <p className="project-details-closed-notice">
+                      This project is currently closed.
+                    </p>
+                  )}
                 </>
               ) : !isAuthenticated ? (
                 <>

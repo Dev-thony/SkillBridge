@@ -92,12 +92,17 @@ export async function listProjects(req, res, next) {
   try {
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
     const limit = 20;
+
     const query = {};
-    if (
-      req.query.status &&
-      ["open", "full", "closed"].includes(req.query.status)
-    )
-      query.status = req.query.status;
+
+    // Hide closed projects from public discovery by default.
+    if (req.query.status) {
+      if (["open", "full", "closed"].includes(req.query.status)) {
+        query.status = req.query.status;
+      }
+    } else {
+      query.status = { $ne: "closed" };
+    }
     if (typeof req.query.skill === "string" && req.query.skill.trim()) {
       const escapedSkill = req.query.skill
         .trim()
@@ -109,7 +114,9 @@ export async function listProjects(req, res, next) {
       };
     }
     if (req.query.search) {
-      const escaped = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const escaped = req.query.search
+        .trim()
+        .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       query.$or = [
         { title: { $regex: escaped, $options: "i" } },
         { shortDescription: { $regex: escaped, $options: "i" } },
