@@ -9,52 +9,42 @@ function isOwner(project, user) {
 export async function createRequest(req, res, next) {
   try {
     if (!mongoose.isValidObjectId(req.params.id))
-      return res
-        .status(400)
-        .json({
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Project identifier is invalid.",
-          },
-        });
+      return res.status(400).json({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Project identifier is invalid.",
+        },
+      });
     const project = await Project.findById(req.params.id);
     if (!project)
-      return res
-        .status(404)
-        .json({
-          error: { code: "NOT_FOUND", message: "Project was not found." },
-        });
+      return res.status(404).json({
+        error: { code: "NOT_FOUND", message: "Project was not found." },
+      });
     if (isOwner(project, req.user))
-      return res
-        .status(409)
-        .json({
-          error: {
-            code: "CONFLICT",
-            message: "You cannot request to join your own project.",
-          },
-        });
+      return res.status(409).json({
+        error: {
+          code: "CONFLICT",
+          message: "You cannot request to join your own project.",
+        },
+      });
     if (project.status !== "open")
-      return res
-        .status(409)
-        .json({
-          error: {
-            code: "CONFLICT",
-            message: "This project is not accepting requests.",
-          },
-        });
+      return res.status(409).json({
+        error: {
+          code: "CONFLICT",
+          message: "This project is not accepting requests.",
+        },
+      });
     if (
       project.members.some(
         (member) => member.toString() === req.user._id.toString(),
       )
     )
-      return res
-        .status(409)
-        .json({
-          error: {
-            code: "CONFLICT",
-            message: "You are already a member of this project.",
-          },
-        });
+      return res.status(409).json({
+        error: {
+          code: "CONFLICT",
+          message: "You are already a member of this project.",
+        },
+      });
 
     const existing = await JoinRequest.findOne({
       project: project._id,
@@ -62,29 +52,24 @@ export async function createRequest(req, res, next) {
       status: "pending",
     });
     if (existing)
-      return res
-        .status(409)
-        .json({
-          error: {
-            code: "CONFLICT",
-            message: "You already have a pending request for this project.",
-          },
-        });
+      return res.status(409).json({
+        error: {
+          code: "CONFLICT",
+          message: "You already have a pending request for this project.",
+        },
+      });
 
     const message = req.body?.message;
     if (
       message !== undefined &&
       (typeof message !== "string" || message.length > 1000)
     )
-      return res
-        .status(400)
-        .json({
-          error: {
-            code: "VALIDATION_ERROR",
-            message:
-              "Request message must be text with at most 1000 characters.",
-          },
-        });
+      return res.status(400).json({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Request message must be text with at most 1000 characters.",
+        },
+      });
 
     const request = await JoinRequest.create({
       project: project._id,
@@ -95,12 +80,10 @@ export async function createRequest(req, res, next) {
           (skill) => typeof skill === "string",
         ) || [],
     });
-    res
-      .status(201)
-      .json({
-        data: { request },
-        message: "Join request submitted successfully.",
-      });
+    res.status(201).json({
+      data: { request },
+      message: "Join request submitted successfully.",
+    });
   } catch (error) {
     next(error);
   }
@@ -109,30 +92,24 @@ export async function createRequest(req, res, next) {
 export async function listProjectRequests(req, res, next) {
   try {
     if (!mongoose.isValidObjectId(req.params.id))
-      return res
-        .status(400)
-        .json({
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Project identifier is invalid.",
-          },
-        });
+      return res.status(400).json({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Project identifier is invalid.",
+        },
+      });
     const project = await Project.findById(req.params.id);
     if (!project)
-      return res
-        .status(404)
-        .json({
-          error: { code: "NOT_FOUND", message: "Project was not found." },
-        });
+      return res.status(404).json({
+        error: { code: "NOT_FOUND", message: "Project was not found." },
+      });
     if (!isOwner(project, req.user))
-      return res
-        .status(403)
-        .json({
-          error: {
-            code: "FORBIDDEN",
-            message: "Only the project owner can view join requests.",
-          },
-        });
+      return res.status(403).json({
+        error: {
+          code: "FORBIDDEN",
+          message: "Only the project owner can view join requests.",
+        },
+      });
 
     const requests = await JoinRequest.find({ project: project._id })
       .populate("applicant", "name email title skills avatarUrl")
@@ -263,5 +240,61 @@ export async function reviewRequest(req, res, next) {
     return next(error);
   } finally {
     await session.endSession();
+  }
+}
+
+export async function withdrawRequest(req, res, next) {
+  try {
+    const { requestId } = req.params;
+
+    if (!mongoose.isValidObjectId(requestId)) {
+      return res.status(400).json({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Invalid request identifier.",
+        },
+      });
+    }
+
+    const request = await JoinRequest.findById(requestId);
+
+    if (!request) {
+      return res.status(404).json({
+        error: {
+          code: "NOT_FOUND",
+          message: "Join request not found.",
+        },
+      });
+    }
+
+    if (request.applicant.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        error: {
+          code: "FORBIDDEN",
+          message: "You can only withdraw your own join requests.",
+        },
+      });
+    }
+
+    if (request.status !== "pending") {
+      return res.status(409).json({
+        error: {
+          code: "CONFLICT",
+          message: "Only pending requests can be withdrawn.",
+        },
+      });
+    }
+
+    request.status = "withdrawn";
+    request.reviewedAt = new Date();
+
+    await request.save();
+
+    return res.status(200).json({
+      data: { request },
+      message: "Join request withdrawn successfully.",
+    });
+  } catch (error) {
+    next(error);
   }
 }

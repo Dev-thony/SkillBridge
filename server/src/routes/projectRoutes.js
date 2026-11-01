@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   createProject,
+  closeProject,
   deleteProject,
   getProject,
   listOwnProjects,
@@ -31,6 +32,7 @@ router.post("/", requireAuth, createProject);
 // Project details and owner actions.
 router.get("/:id", getProject);
 router.patch("/:id", requireAuth, updateProject);
+router.patch("/:id/close", requireAuth, closeProject);
 router.delete("/:id", requireAuth, deleteProject);
 
 // Join requests.

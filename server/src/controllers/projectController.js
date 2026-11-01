@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Project from "../models/Project.js";
+import JoinRequest from "../models/JoinRequest.js";
 
 function ownerOnly(project, user) {
   return project.owner.toString() === user._id.toString();
@@ -272,39 +273,87 @@ export async function updateProject(req, res, next) {
   }
 }
 
-export async function deleteProject(req, res, next) {
+export async function closeProject(req, res, next) {
   try {
-    if (!mongoose.isValidObjectId(req.params.id))
-      return res
-        .status(400)
-        .json({
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Project identifier is invalid.",
-          },
-        });
     const project = await Project.findById(req.params.id);
-    if (!project)
-      return res
-        .status(404)
-        .json({
-          error: { code: "NOT_FOUND", message: "Project was not found." },
-        });
-    if (!ownerOnly(project, req.user))
-      return res
-        .status(403)
-        .json({
-          error: {
-            code: "FORBIDDEN",
-            message: "Only the project owner can close this project.",
-          },
-        });
-    project.status = "closed";
-    await project.save();
-    res
-      .status(200)
-      .json({ data: { project }, message: "Project closed successfully." });
+
+    if (!project) {
+      return res.status(404).json({
+        error: {
+          code: "NOT_FOUND",
+          message: "Project was not found.",
+        },
+      });
+    }
+
+    if (!ownerOnly(project, req.user)) {
+      return res.status(403).json({
+        error: {
+          code: "FORBIDDEN",
+          message: "Only the project owner can close this project.",
+        },
+      });
+    }
+
+    if (project.status !== "closed") {
+      project.status = "closed";
+      await project.save();
+    }
+
+    const updatedProject = await Project.findById(project._id)
+      .populate("owner", "name title avatarUrl")
+      .populate("members", "name title avatarUrl");
+
+    return res.status(200).json({
+      data: {
+        project: updatedProject,
+      },
+      message: "Project closed successfully.",
+    });
   } catch (error) {
     next(error);
   }
 }
+
+export const deleteProject = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found",
+      });
+    }
+
+    if (!ownerOnly(project, req.user)) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the project owner can delete this project",
+      });
+    }
+
+    if (project.status !== "closed") {
+      return res.status(400).json({
+        success: false,
+        message: "Close the project before permanently deleting it",
+      });
+    }
+
+    await JoinRequest.deleteMany({ project: project._id });
+    await Project.findByIdAndDelete(project._id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Project permanently deleted",
+      projectId: project._id,
+    });
+  } catch (error) {
+    console.error("Delete project error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete project",
+    });
+  }
+};
