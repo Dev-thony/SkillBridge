@@ -1,4 +1,30 @@
 :root {
+  color-scheme: light;
+
+  --app-bg: #ffffff;
+  --app-surface: #f8fafc;
+  --app-text: #172033;
+  --app-muted: #64748b;
+  --app-border: #e2e8f0;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --app-bg: #101827;
+  --app-surface: #1e293b;
+  --app-text: #f1f5f9;
+  --app-muted: #94a3b8;
+  --app-border: #334155;
+}
+
+body {
+  background-color: var(--app-bg);
+  color: var(--app-text);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+:root {
   --text: #6b6375;
   --text-h: #08060d;
   --bg: #fff;
@@ -108,4 +134,55 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-card: #ffffff;
+  --text-primary: #172033;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --input-bg: #ffffff;
+  --navbar-bg: #ffffff;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-primary: #0f172a;
+  --bg-secondary: #111c30;
+  --bg-card: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #a8b5c7;
+  --border-color: #334155;
+  --input-bg: #1e293b;
+  --navbar-bg: #0f172a;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+input,
+textarea,
+select {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.card,
+.panel,
+.modal {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-color);
 }
