@@ -8,6 +8,7 @@ import projectRoutes from "./routes/projectRoutes.js";
 import requestRoutes from "./routes/requestRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import cookieParser from "cookie-parser";
+import { connectDB } from "./config/db.js";
 
 const app = express();
 app.use(helmet());
@@ -46,6 +47,16 @@ app.use(
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok" });
+});
+
+// Ensure MongoDB is connected before handling API requests.
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.use("/api/auth", authRoutes);
