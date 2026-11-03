@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import { SkillTag } from "../components/ui/SkillTag";
 import "./LandingPage.css";
+import { usePageMetadata } from "../hooks/usePageMetadata";
 
 const steps = [
   {
@@ -100,6 +101,13 @@ function WorkbenchPreview() {
 }
 
 export default function LandingPage() {
+  
+  usePageMetadata({
+    title: "Build Projects Together",
+    description:
+      "Discover projects, connect with developers and designers, share your skills, and gain real-world experience through collaboration.",
+    path: "/",
+  });
 
   return (
     <main className="landing-page">

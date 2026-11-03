@@ -3,7 +3,7 @@
 
 ## Current milestone
 
-Presentation readiness, theme consistency, and production deployment.
+Presentation readiness, theme consistency, production deployment, and discoverability.
 
 ## 1. Project management improvements
 
@@ -45,7 +45,23 @@ Presentation readiness, theme consistency, and production deployment.
 - [ ] Improve form validation and feedback.
 - [ ] Check keyboard navigation and accessible labels.
 
-## 6. Production deployment
+## 6. SEO and website branding
+
+- [x] Add default page titles and meta descriptions.
+- [x] Add reusable page-specific metadata.
+- [x] Add Open Graph metadata for social sharing.
+- [x] Add Twitter/X card metadata.
+- [ ] Create a dedicated 1200 × 630 social-sharing image.
+- [x] Retain the existing SkillBridge favicon.
+- [x] Add web app manifest and browser theme colour.
+- [x] Add canonical URL support.
+- [x] Add sitemap.xml for public static pages.
+- [x] Add robots.txt.
+- [ ] Verify metadata and social previews using preview/debugging tools.
+- [x] Mark private pages as non-indexable.
+- [ ] Implement server-side or pre-rendered metadata for dynamic project previews.
+
+## 7. Production deployment
 
 - [ ] Configure production environment variables.
 - [ ] Configure production MongoDB access.
@@ -56,6 +72,7 @@ Presentation readiness, theme consistency, and production deployment.
 - [ ] Test registration, login, logout and profile restoration.
 - [ ] Test project creation, browsing and join requests.
 - [ ] Verify production logs and error handling.
+- [ ] Verify the deployed website's metadata, favicon and social previews.
 
 ## Completion criteria
 

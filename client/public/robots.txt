@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /applications
+Disallow: /settings
+Disallow: /profile
+Disallow: /profile/setup
+Disallow: /projects/new
+
+Sitemap: https://skillbridge-tal.vercel.app/sitemap.xml

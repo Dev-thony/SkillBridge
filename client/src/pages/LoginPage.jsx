@@ -4,6 +4,7 @@ import { ArrowRight, Eye, EyeOff } from "lucide-react";
 
 import { TextField } from "../components/ui/TextField";
 import { useAuth } from "../context/AuthContext";
+import { usePageMetadata } from "../hooks/usePageMetadata";
 
 import "./RegisterPage.css";
 
@@ -16,6 +17,12 @@ export default function LoginPage() {
   const [form, setForm] = useState({
     email: "",
     password: "",
+  });
+
+  usePageMetadata({
+    title: "Log in",
+    description: "Log in to your SkillBridge account.",
+    noIndex: true,
   });
 
   const [errors, setErrors] = useState({});

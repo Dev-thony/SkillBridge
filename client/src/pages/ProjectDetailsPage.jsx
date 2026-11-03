@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Layers3, Users, } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
 import { Badge, SkillTag } from "../components/ui";
+import { usePageMetadata } from "../hooks/usePageMetadata";
 
 import {
   getMyJoinRequests,
@@ -32,6 +33,15 @@ export default function ProjectDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  usePageMetadata({
+    title: project?.title || "Project Details",
+    description:
+      project?.summary ||
+      "Explore collaborative projects and find opportunities to build with other developers.",
+    path: `/projects/${projectId}`,
+    noIndex: !project || project.status === "closed",
+  });
 
   const handleDeleteProject = async () => {
     const confirmed = window.confirm(
@@ -201,6 +211,7 @@ export default function ProjectDetailsPage() {
     requestStatus !== "pending" &&
     requestStatus !== "approved";
 
+  
   return (
     <main className="project-details-page">
       <div className="container project-details-container">

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 import { ProjectCard } from "../components/ui";
 import { listProjects } from "../services/projectService";
-
+import { usePageMetadata } from "../hooks/usePageMetadata";
 import "./ExplorePage.css";
 
 const STATUSES = [
@@ -63,6 +63,13 @@ export default function ExplorePage() {
     setQuery("");
     setStatus("open");
   }
+
+  usePageMetadata({
+    title: "Explore Projects",
+    description:
+      "Discover collaborative projects, explore technologies and roles, and find teams looking for your skills.",
+    path: "/explore",
+  });
 
   return (
     <main className="explore-page">
