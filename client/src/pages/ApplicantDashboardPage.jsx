@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { getMyJoinRequests } from "../services/projectService";
+import {
+  getMyJoinRequests,
+  withdrawJoinRequest,
+} from "../services/projectService";
 
 import "./ApplicantDashboardPage.css";
 
@@ -29,6 +32,7 @@ export default function ApplicantDashboardPage() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [withdrawingId, setWithdrawingId] = useState(null);
 
   async function loadRequests() {
     try {
@@ -42,6 +46,33 @@ export default function ApplicantDashboardPage() {
       setError(err.message || "Unable to load your applications.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleWithdraw(requestId) {
+    const confirmed = window.confirm(
+      "Are you sure you want to withdraw this join request?",
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setWithdrawingId(requestId);
+      setError("");
+
+      await withdrawJoinRequest(requestId);
+
+      setRequests((current) =>
+        current.map((request) =>
+          (request._id || request.id) === requestId
+            ? { ...request, status: "withdrawn" }
+            : request,
+        ),
+      );
+    } catch (err) {
+      setError(err.message || "Unable to withdraw your request.");
+    } finally {
+      setWithdrawingId(null);
     }
   }
 
@@ -198,6 +229,25 @@ export default function ApplicantDashboardPage() {
 
                 {request.status === "pending" && (
                   <p>Your request is awaiting the project owner's decision.</p>
+                )}
+
+                {request.status === "pending" && (
+                  <button
+                    type="button"
+                    className="applicant-dashboard__withdraw"
+                    onClick={() => handleWithdraw(request._id || request.id)}
+                    disabled={withdrawingId === (request._id || request.id)}
+                  >
+                    {withdrawingId === (request._id || request.id)
+                      ? "Withdrawing..."
+                      : "Withdraw request"}
+                  </button>
+                )}
+
+                {request.status === "withdrawn" && (
+                  <p className="applicant-dashboard__withdrawn">
+                    You withdrew this request.
+                  </p>
                 )}
 
                 {request.status === "declined" && (

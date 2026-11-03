@@ -1135,3 +1135,103 @@
     font-size: 13px;
   }
 }
+
+/* =========================================
+   LANDING PAGE — GLOBAL THEME FIX
+   ========================================= */
+
+.landing-page {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+/* Hero workbench preview */
+.workbench {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.workbench__topbar {
+  background: var(--color-surface-muted, var(--color-surface));
+}
+
+.workbench__rail {
+  background: var(--color-surface-muted, var(--color-surface));
+  color: var(--color-text-secondary);
+}
+
+.workbench__rail-item {
+  color: var(--color-text-secondary);
+}
+
+.workbench__rail-item--active {
+  color: var(--color-brand);
+  background: var(--color-brand-soft);
+}
+
+.workbench__task {
+  color: var(--color-text-primary);
+}
+
+.workbench__team-label {
+  color: var(--color-text-secondary);
+}
+
+/* How it works */
+.how-it-works {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.section-heading h2,
+.step-card h3 {
+  color: var(--color-text-primary);
+}
+
+.section-heading > p:last-child,
+.step-card p {
+  color: var(--color-text-secondary);
+}
+
+.steps-grid {
+  border-color: var(--color-border);
+}
+
+.step-card {
+  background: var(--color-surface);
+}
+
+/* Closing call-to-action */
+.landing-cta {
+  background: var(--color-surface-muted, var(--color-surface));
+  color: var(--color-text-primary);
+}
+
+.landing-cta h2 {
+  color: var(--color-text-primary);
+}
+
+.landing-cta__inner > div:first-child > p:last-child {
+  color: var(--color-text-secondary);
+}
+
+/* Footer */
+.landing-footer {
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+}
+
+.landing-footer__brand-name {
+  color: var(--color-text-primary);
+}
+
+.landing-footer__inner > p,
+.landing-footer__links a {
+  color: var(--color-text-secondary);
+}
+
+/* Ensure links remain readable */
+.landing-hero__secondary,
+.landing-cta__text-link {
+  color: var(--color-text-primary);
+}

@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Check, Circle } from "lucide-react";
 
 import { TextField } from "../components/ui/TextField";
 import { useAuth } from "../context/AuthContext";
-
-
 import "./RegisterPage.css";
 
 const initialForm = {
@@ -14,6 +12,29 @@ const initialForm = {
   password: "",
   confirmPassword: "",
 };
+
+const passwordRules = [
+  {
+    label: "At least 8 characters",
+    test: (password) => password.length >= 8,
+  },
+  {
+    label: "One uppercase letter",
+    test: (password) => /[A-Z]/.test(password),
+  },
+  {
+    label: "One lowercase letter",
+    test: (password) => /[a-z]/.test(password),
+  },
+  {
+    label: "One number",
+    test: (password) => /\d/.test(password),
+  },
+  {
+    label: "One special character",
+    test: (password) => /[^A-Za-z0-9]/.test(password),
+  },
+];
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -24,6 +45,10 @@ export default function RegisterPage() {
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const passwordIsValid = passwordRules.every((rule) =>
+    rule.test(form.password),
+  );
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -52,8 +77,8 @@ export default function RegisterPage() {
       nextErrors.email = "Enter a valid email address.";
     }
 
-    if (form.password.length < 12) {
-      nextErrors.password = "Password must contain at least 12 characters.";
+    if (!passwordIsValid) {
+      nextErrors.password = "Please meet all password requirements.";
     }
 
     if (form.password.length > 128) {
@@ -75,9 +100,7 @@ export default function RegisterPage() {
     const validationErrors = validateForm();
     setErrors(validationErrors);
 
-    if (Object.keys(validationErrors).length > 0) {
-      return;
-    }
+    if (Object.keys(validationErrors).length > 0) return;
 
     setLoading(true);
     setServerError("");
@@ -163,7 +186,7 @@ export default function RegisterPage() {
               onChange={handleChange}
               error={errors.password}
               autoComplete="new-password"
-              minLength={12}
+              minLength={8}
               maxLength={128}
               required
             />
@@ -173,9 +196,37 @@ export default function RegisterPage() {
               className="auth-form__toggle"
               onClick={() => setShowPassword((value) => !value)}
               aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
             >
               {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
             </button>
+
+            {form.password.length > 0 && (
+              <div
+                className="password-checklist"
+                aria-label="Password requirements"
+                aria-live="polite"
+              >
+                <p>Password requirements</p>
+
+                <ul>
+                  {passwordRules.map((rule) => {
+                    const passed = rule.test(form.password);
+
+                    return (
+                      <li key={rule.label} className={passed ? "is-valid" : ""}>
+                        {passed ? (
+                          <Check size={14} aria-hidden="true" />
+                        ) : (
+                          <Circle size={12} aria-hidden="true" />
+                        )}
+                        <span>{rule.label}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </div>
 
           <TextField
@@ -196,7 +247,6 @@ export default function RegisterPage() {
             disabled={loading}
           >
             <span>{loading ? "Creating account..." : "Create account"}</span>
-
             {!loading && <ArrowRight size={19} />}
           </button>
         </form>

@@ -159,6 +159,7 @@ export default function LoginPage() {
               className="auth-form__toggle"
               onClick={() => setShowPassword((value) => !value)}
               aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
             >
               {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
             </button>

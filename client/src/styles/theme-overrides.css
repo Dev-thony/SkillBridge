@@ -1,0 +1,372 @@
+
+/* =====================================================
+   SKILLBRIDGE — GLOBAL THEME OVERRIDES
+   The theme tokens in tokens.css are the single source
+   of truth for light and dark appearance.
+   ===================================================== */
+
+/* Global page foundation */
+html,
+body,
+#root {
+  min-height: 100%;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+body {
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+/* Shared surfaces */
+.explore-page__browser,
+.explore-page__search,
+.explore-page__filters,
+.explore-page__empty,
+.owner-dashboard__project,
+.owner-dashboard__empty,
+.owner-dashboard__request,
+.applicant-dashboard__card,
+.applicant-dashboard__empty,
+.project-details-role,
+.project-details-panel,
+.sb-project-card,
+.step-card,
+.workbench,
+.workbench__topbar,
+.workbench__body,
+.landing-visual-caption {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+/* Shared headings and text */
+.owner-dashboard h1,
+.owner-dashboard h2,
+.owner-dashboard h3,
+.explore-page h1,
+.explore-page h2,
+.project-details-page h1,
+.project-details-page h2,
+.project-details-page h3,
+.landing-page h1,
+.landing-page h2,
+.landing-page h3 {
+  color: var(--color-text-primary);
+}
+
+.owner-dashboard p,
+.explore-page p,
+.project-details-page p,
+.landing-page p {
+  color: var(--color-text-secondary);
+}
+
+/* Explore page */
+.explore-page {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.explore-page__browser {
+  border: 1px solid var(--color-border);
+}
+
+.explore-page__search {
+  background: var(--color-background);
+  border-color: var(--color-border-strong);
+}
+
+.explore-page__search input,
+.explore-page input,
+.explore-page select {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
+}
+
+.explore-page input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.explore-page__filters {
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.explore-page__meta {
+  border-color: var(--color-border);
+}
+
+.explore-page__meta h2 {
+  color: var(--color-text-primary);
+}
+
+.explore-page__empty {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-muted);
+}
+
+.explore-page__empty h3 {
+  color: var(--color-text-primary);
+}
+
+.explore-page__empty p {
+  color: var(--color-text-secondary);
+}
+
+/* Shared project cards */
+.sb-project-card {
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-card);
+}
+
+.sb-project-card__title,
+.sb-project-card__title-link {
+  color: var(--color-text-primary);
+}
+
+.sb-project-card__summary,
+.sb-project-card__updated,
+.sb-project-card__team {
+  color: var(--color-text-secondary);
+}
+
+.sb-project-card__footer {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border);
+}
+
+/* Owner dashboard */
+.owner-dashboard {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.owner-dashboard .owner-dashboard__project,
+.owner-dashboard .owner-dashboard__empty {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+}
+
+.owner-dashboard .owner-dashboard__project-heading {
+  border-color: var(--color-border);
+}
+
+.owner-dashboard .owner-dashboard__project-heading h2,
+.owner-dashboard .owner-dashboard__requests h3,
+.owner-dashboard .owner-dashboard__request strong {
+  color: var(--color-text-primary);
+}
+
+.owner-dashboard .owner-dashboard__project-heading p,
+.owner-dashboard .owner-dashboard__request p {
+  color: var(--color-text-secondary);
+}
+
+.owner-dashboard .owner-dashboard__request {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border);
+}
+
+.owner-dashboard .owner-dashboard__actions button,
+.owner-dashboard .owner-dashboard__request-actions button {
+  background: var(--color-surface-muted);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-strong);
+}
+
+.owner-dashboard .owner-dashboard__actions button:hover,
+.owner-dashboard .owner-dashboard__request-actions button:hover {
+  border-color: var(--color-brand);
+}
+
+.owner-dashboard .owner-dashboard__request-actions button:first-child {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: var(--color-text-inverse);
+}
+
+.owner-dashboard .owner-dashboard__status {
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+.owner-dashboard .owner-dashboard__status--open {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.owner-dashboard .owner-dashboard__status--full {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.owner-dashboard .owner-dashboard__status--closed {
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+/* Applicant dashboard */
+.applicant-dashboard {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.applicant-dashboard__card,
+.applicant-dashboard__empty {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+/* Project details */
+.project-details-page {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.project-details-header,
+.project-details-section {
+  border-color: var(--color-border);
+}
+
+.project-details-header h1,
+.project-details-section h2,
+.project-details-panel h2,
+.project-details-panel h3,
+.project-details-stat strong {
+  color: var(--color-text-primary);
+}
+
+.project-details-meta,
+.project-details-summary,
+.project-details-section p,
+.project-details-goals,
+.project-details-panel p,
+.project-details-stat-label,
+.project-details-not-found p {
+  color: var(--color-text-secondary);
+}
+
+.project-details-role,
+.project-details-panel {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.project-details-divider {
+  background: var(--color-border);
+}
+
+.project-details-closed-notice {
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+/* Landing page */
+.landing-page {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.landing-page .workbench,
+.landing-page .workbench__topbar,
+.landing-page .workbench__body,
+.landing-page .landing-visual-caption,
+.landing-page .step-card {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+.landing-page .how-it-works {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.landing-page .step-card p,
+.landing-page .workbench__topbar-label,
+.landing-page .workbench__section-title,
+.landing-page .workbench__task-status,
+.landing-page .landing-hero__description {
+  color: var(--color-text-secondary);
+}
+
+.landing-page .landing-cta {
+  background: var(--color-brand-soft);
+  color: var(--color-text-primary);
+}
+
+.landing-page .landing-footer {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+/* Forms and controls */
+input,
+textarea,
+select {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Keep primary and danger buttons readable */
+.sb-button--primary {
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+}
+
+.sb-button--danger {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+/* Smooth theme transitions */
+body,
+main,
+section,
+article,
+header,
+footer,
+nav,
+aside,
+button,
+input,
+textarea,
+select,
+a {
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  body,
+  main,
+  section,
+  article,
+  header,
+  footer,
+  nav,
+  aside,
+  button,
+  input,
+  textarea,
+  select,
+  a {
+    transition: none;
+  }
+}

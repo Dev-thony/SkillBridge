@@ -17,6 +17,8 @@ import {
   updateOwnProfile,
 } from "../services/authService";
 
+import { deleteMyAccount } from "../services/userService";
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -26,11 +28,9 @@ export function AuthProvider({ children }) {
   const refreshUser = useCallback(async () => {
     try {
       const response = await getCurrentUser();
-
       const currentUser = response.data.user;
 
       setUser(currentUser);
-
       return currentUser;
     } catch (error) {
       setUser(null);
@@ -46,42 +46,33 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (!hasKnownSession()) {
-      return;
-    }
-    // Restore auth state during bootstrap. This intentionally updates state
-    // after the user session is checked, and the lint rule is suppressed here.
+    if (!hasKnownSession()) return;
+
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void refreshUser();
   }, [refreshUser]);
 
   const login = useCallback(async (credentials) => {
     const response = await loginUser(credentials);
-
     const authenticatedUser = response.data.user;
 
     setUser(authenticatedUser);
-
     return authenticatedUser;
   }, []);
 
   const register = useCallback(async (userData) => {
     const response = await registerUser(userData);
-
     const authenticatedUser = response.data.user;
 
     setUser(authenticatedUser);
-
     return authenticatedUser;
   }, []);
 
   const updateProfile = useCallback(async (profileData) => {
     const response = await updateOwnProfile(profileData);
-
     const updatedUser = response.data.user;
 
     setUser(updatedUser);
-
     return updatedUser;
   }, []);
 
@@ -94,6 +85,15 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const deleteAccount = useCallback(async () => {
+    const response = await deleteMyAccount();
+
+    clearSessionMarker();
+    setUser(null);
+
+    return response;
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -102,10 +102,20 @@ export function AuthProvider({ children }) {
       login,
       register,
       logout,
+      deleteAccount,
       refreshUser,
       updateProfile,
     }),
-    [user, loading, login, register, logout, refreshUser, updateProfile],
+    [
+      user,
+      loading,
+      login,
+      register,
+      logout,
+      deleteAccount,
+      refreshUser,
+      updateProfile,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

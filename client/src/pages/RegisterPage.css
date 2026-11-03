@@ -326,3 +326,136 @@
     animation: none;
   }
 }
+
+
+/* Password field positioning */
+.auth-form__password {
+  position: relative;
+  min-width: 0;
+}
+
+.auth-form__password .sb-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding-right: 52px;
+}
+
+/* Keep the eye aligned with the input, not the error message. */
+.auth-form__password .auth-form__toggle {
+  top: 40px;
+  right: 12px;
+  bottom: auto;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+}
+
+.auth-form__password .auth-form__toggle:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-brand);
+}
+
+.auth-form__password .auth-form__toggle:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* Live password checklist */
+.password-checklist {
+  margin-top: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted, var(--color-surface));
+}
+
+.password-checklist > p {
+  margin: 0 0 9px;
+  color: var(--color-text-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.password-checklist ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.password-checklist li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.password-checklist li svg {
+  flex: 0 0 auto;
+}
+
+.password-checklist li.is-valid {
+  color: var(--color-success);
+}
+
+@media (max-width: 480px) {
+  .password-checklist ul {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Shared password visibility button for login and registration */
+.auth-form__password {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.auth-form__password .auth-form__toggle {
+  position: absolute;
+  top: 40px;
+  right: 12px;
+  bottom: auto;
+  z-index: 5;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 32px;
+  height: 32px;
+  padding: 0;
+
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-text-secondary);
+
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.auth-form__password .auth-form__toggle:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-brand);
+}
+
+.auth-form__password .auth-form__toggle:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* Leave room for the visibility icon */
+.auth-form__password input {
+  box-sizing: border-box;
+  width: 100%;
+  padding-right: 52px;
+}

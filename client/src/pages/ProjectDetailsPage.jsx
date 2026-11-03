@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Layers3, Users, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Layers3, Users, } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
 import { Badge, SkillTag } from "../components/ui";
@@ -10,9 +10,15 @@ import {
   getProject,
   submitJoinRequest,
   closeProject,
+  deleteProject,
 } from "../services/projectService";
 
 import "./ProjectDetailsPage.css";
+
+import { useNavigate } from "react-router-dom";
+
+// Inside the component:
+
 
 export default function ProjectDetailsPage() {
   const { projectId } = useParams();
@@ -25,6 +31,25 @@ export default function ProjectDetailsPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
+
+  const handleDeleteProject = async () => {
+    const confirmed = window.confirm(
+      "Permanently delete this project? This action cannot be undone.",
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteProject(project._id);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Delete project error:", error);
+      setError(
+        error.message || "Could not delete this project. Please try again.",
+      );
+    }
+  };
 
   const loadProject = useCallback(async () => {
     setLoading(true);
@@ -326,84 +351,89 @@ export default function ProjectDetailsPage() {
                     <ArrowRight size={17} aria-hidden="true" />
                   </Link>
 
-                  {project.status !== "closed" && (
+                  {project.status !== "closed" ? (
                     <button
                       type="button"
-                      className="project-details-close"
                       onClick={handleCloseProject}
-                      disabled={submitting}
+                      className="project-details-close"
                     >
-                      <XCircle size={17} aria-hidden="true" />
-
-                      {submitting ? "Closing project..." : "Close project"}
+                      Close project
                     </button>
-                  )}
+                  ) : (
+                    <>
+                      <p className="project-details-closed-notice">
+                        This project is closed.
+                      </p>
 
-                  {project.status === "closed" && (
-                    <p className="project-details-closed-notice">
-                      This project is currently closed.
-                    </p>
+                      <button
+                        type="button"
+                        onClick={handleDeleteProject}
+                        className="project-details-close"
+                      >
+                        Delete project permanently
+                      </button>
+                    </>
                   )}
                 </>
               ) : !isAuthenticated ? (
-                <>
-                  <h3>Interested in joining?</h3>
-                  <p>Sign in to send a request to the project owner.</p>
+              <>
+                <h3>Interested in joining?</h3>
+                <p>Sign in to send a request to the project owner.</p>
 
-                  <Link className="project-details-join" to="/login">
-                    Sign in to request
-                    <ArrowRight size={17} aria-hidden="true" />
-                  </Link>
-                </>
+                <Link className="project-details-join" to="/login">
+                  Sign in to request
+                  <ArrowRight size={17} aria-hidden="true" />
+                </Link>
+              </>
               ) : requestStatus === "pending" ? (
-                <>
-                  <h3>Request pending</h3>
-                  <p>
-                    Your request has been sent and is waiting for the owner.
-                  </p>
-                </>
+              <>
+                <h3>Request pending</h3>
+                <p>
+                  Your request has been sent and is waiting for the owner.
+                </p>
+              </>
               ) : requestStatus === "approved" ? (
-                <>
-                  <h3>Request approved</h3>
-                  <p>Your request was approved.</p>
-                </>
+              <>
+                <h3>Request approved</h3>
+                <p>Your request was approved.</p>
+              </>
               ) : !canRequest ? (
-                <>
-                  <h3>Not accepting requests</h3>
-                  <p>This project is full or closed.</p>
-                </>
+              <>
+                <h3>Not accepting requests</h3>
+                <p>This project is full or closed.</p>
+              </>
               ) : (
-                <>
-                  <h3>Interested in joining?</h3>
+              <>
+                <h3>Interested in joining?</h3>
 
-                  <p>
-                    Tell the project owner briefly why you want to contribute.
-                  </p>
+                <p>
+                  Tell the project owner briefly why you want to contribute.
+                </p>
 
-                  <form onSubmit={handleJoinRequest}>
-                    <label htmlFor="join-message">Message (optional)</label>
+                <form onSubmit={handleJoinRequest}>
+                  <label htmlFor="join-message">Message (optional)</label>
 
-                    <textarea
-                      id="join-message"
-                      value={message}
-                      onChange={(event) => setMessage(event.target.value)}
-                      maxLength={1000}
-                      rows={4}
-                      placeholder="Introduce yourself and how you can contribute..."
-                    />
+                  <textarea
+                    id="join-message"
+                    value={message}
+                    onChange={(event) => setMessage(event.target.value)}
+                    maxLength={1000}
+                    rows={4}
+                    placeholder="Introduce yourself and how you can contribute..."
+                  />
 
-                    <button
-                      type="submit"
-                      className="project-details-join"
-                      disabled={submitting}
-                    >
-                      {submitting ? "Sending..." : "Request to join"}
-                      {!submitting && (
-                        <ArrowRight size={17} aria-hidden="true" />
-                      )}
-                    </button>
-                  </form>
-                </>
+                  <button
+                    type="submit"
+                    className="project-details-join"
+                    disabled={submitting}
+                  >
+                    {submitting ? "Sending..." : "Request to join"}
+                    {!submitting && (
+                      <ArrowRight size={17} aria-hidden="true" />
+                    )}
+                  </button>
+                </form>
+              </>
               )}
 
               {notice && <p role="status">{notice}</p>}

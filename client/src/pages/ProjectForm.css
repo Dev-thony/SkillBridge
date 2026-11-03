@@ -2,6 +2,7 @@
   min-height: calc(100vh - var(--header-height));
   padding: 48px 20px 80px;
   background: var(--color-background);
+  color: var(--color-text-primary);
 }
 
 .project-form-container {
@@ -15,6 +16,7 @@
 
 .project-form-container h1 {
   margin: 0 0 12px;
+  color: var(--color-text-primary);
   font-size: clamp(2rem, 4vw, 3rem);
 }
 
@@ -29,12 +31,15 @@
   padding: clamp(20px, 4vw, 36px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: #fff;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-card);
 }
 
 .project-form label {
   display: grid;
   gap: 8px;
+  color: var(--color-text-primary);
   font-size: 0.95rem;
   font-weight: 650;
 }
@@ -44,16 +49,27 @@
   width: 100%;
   box-sizing: border-box;
   padding: 12px 14px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
   font: inherit;
   font-weight: 400;
   color: var(--color-text-primary);
-  background: #fff;
+  background: var(--color-background);
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.project-form input::placeholder,
+.project-form textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
 }
 
 .project-form input:focus,
 .project-form textarea:focus {
+  border-color: var(--color-brand);
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
 }
@@ -70,7 +86,7 @@
 
 .project-form-error {
   margin: 0;
-  color: #b42318;
+  color: var(--color-danger);
 }
 
 .project-form-actions {
@@ -81,6 +97,10 @@
 }
 
 @media (max-width: 480px) {
+  .project-form-page {
+    padding: 32px 16px 56px;
+  }
+
   .project-form-actions {
     flex-direction: column-reverse;
   }

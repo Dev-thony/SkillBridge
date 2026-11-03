@@ -414,3 +414,218 @@
     font-size: 11px;
   }
 }
+
+/* =========================================
+   EXPLORE PAGE — THEME AND SPACING FIX
+   ========================================= */
+
+.explore-page {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.explore-page__container {
+  width: min(100% - 40px, var(--container-width));
+}
+
+/* Search and filter toolbar */
+.explore-page__browser {
+  margin-top: 36px;
+  padding: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.explore-page__toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+}
+
+/* Search input */
+.explore-page__search {
+  display: flex;
+  width: 100%;
+  max-width: none;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 0 15px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-background);
+  color: var(--color-text-secondary);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.explore-page__search:focus-within {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-brand-soft);
+}
+
+.explore-page__search input {
+  min-height: 46px;
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.explore-page__search input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+/* Status filter */
+.explore-page__filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  min-height: 48px;
+  padding: 0 1px;
+  /* border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); */
+  background: var(--color-surface-muted, var(--color-surface));
+  color: var(--color-text-secondary);
+}
+
+
+.explore-page__filter-control {
+  display: block;
+}
+
+.explore-page__filters select {
+  min-width: 145px;
+  min-height: 38px;
+  padding: 8px 30px 8px 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 7px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.explore-page__filters select:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* Projects heading and create button */
+.explore-page__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 32px 0 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--color-border);
+}
+
+.explore-page__meta h2 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.explore-page__meta .sb-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 19px;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+}
+
+/* Project cards */
+.explore-page__grid {
+  gap: 20px;
+}
+
+/* Empty and error states */
+.explore-page__empty {
+  display: flex;
+  min-height: 220px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 36px 22px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted, var(--color-surface));
+  color: var(--color-text-primary);
+}
+
+.explore-page__empty h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.1rem;
+}
+
+.explore-page__empty p {
+  max-width: 480px;
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+.explore-page__empty button {
+  min-height: 42px;
+  margin-top: 5px;
+  padding: 0 19px;
+}
+
+/* Loading state */
+.explore-page__browser > p[role="status"] {
+  margin: 20px 0;
+  color: var(--color-text-secondary);
+}
+
+/* Responsive layout */
+@media (max-width: 640px) {
+  .explore-page__container {
+    width: min(100% - 32px, var(--container-width));
+  }
+
+  .explore-page__browser {
+    margin-top: 26px;
+    padding: 16px;
+  }
+
+  .explore-page__filters {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: space-between;
+  }
+
+  .explore-page__filter-control {
+    flex: 1;
+  }
+
+  .explore-page__filters select {
+    width: 100%;
+  }
+
+  .explore-page__meta {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 25px;
+    padding-top: 20px;
+  }
+
+  .explore-page__meta .sb-button {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .explore-page__empty {
+    min-height: 190px;
+    padding: 28px 16px;
+  }
+}

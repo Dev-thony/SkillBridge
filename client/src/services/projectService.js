@@ -123,16 +123,19 @@ export async function updateProject(projectId, projectData) {
   return normalizeProject(response.data.project);
 }
 
-export async function closeProject(projectId) {
-  const response = await projectRequest(
-    `/projects/${encodeURIComponent(projectId)}`,
-    {
-      method: "DELETE",
-    },
-  );
+export const closeProject = async (projectId) => {
+  const response = await projectRequest(`/projects/${projectId}/close`, {
+    method: "PATCH",
+  });
 
   return normalizeProject(response.data.project);
-}
+};
+
+export const deleteProject = async (projectId) => {
+  return projectRequest(`/projects/${projectId}`, {
+    method: "DELETE",
+  });
+};
 
 export async function submitJoinRequest(projectId, message = "") {
   const response = await projectRequest(
@@ -176,4 +179,15 @@ export async function listMyProjects() {
   const response = await projectRequest("/projects/mine");
 
   return (response.data?.projects || []).map(normalizeProject);
+}
+
+export async function withdrawJoinRequest(requestId) {
+  const response = await projectRequest(
+    `/requests/${encodeURIComponent(requestId)}/withdraw`,
+    {
+      method: "PATCH",
+    },
+  );
+
+  return response.data.request;
 }

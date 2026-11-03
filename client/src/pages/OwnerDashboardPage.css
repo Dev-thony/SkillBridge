@@ -36,7 +36,8 @@
   padding: clamp(20px, 4vw, 32px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: #fff;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
 }
 
 .owner-dashboard__project-heading {
@@ -90,10 +91,10 @@
   padding: 9px 13px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: #fff;
+  background: var(--color-surface-muted);
+  color: var(--color-text-primary);
   cursor: pointer;
 }
-
 .owner-dashboard__requests {
   padding-top: 22px;
 }

@@ -1,17 +1,29 @@
 import mongoose from "mongoose";
 import User from "../models/User.js";
 import JoinRequest from "../models/JoinRequest.js";
+import Project from "../models/Project.js";
 import { publicUser } from "./authController.js";
+import { COOKIE_NAME, getClearedCookieOptions } from "../utils/authTokens.js";
 
 export async function getPublicUser(req, res, next) {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) {
-      return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "User identifier is invalid." } });
+      return res.status(400).json({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "User identifier is invalid.",
+        },
+      });
     }
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: { code: "NOT_FOUND", message: "User was not found." } });
+    if (!user)
+      return res
+        .status(404)
+        .json({ error: { code: "NOT_FOUND", message: "User was not found." } });
     res.status(200).json({ data: { user: publicUser(user) } });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function updateOwnProfile(req, res, next) {
@@ -257,5 +269,49 @@ export async function getOwnRequests(req, res, next) {
       .populate("project", "title shortDescription status owner memberLimit")
       .sort({ createdAt: -1 });
     res.status(200).json({ data: { requests } });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function deleteMyAccount(req, res, next) {
+  try {
+    const userId = req.user._id;
+
+    // Find all projects owned by this user.
+    const ownedProjects = await Project.find({
+      owner: userId,
+    }).select("_id");
+
+    const projectIds = ownedProjects.map((project) => project._id);
+
+    // Delete requests submitted by this user and requests
+    // associated with projects owned by this user.
+    await JoinRequest.deleteMany({
+      $or: [{ project: { $in: projectIds } }, { applicant: userId }],
+    });
+
+    // Remove this user from projects owned by other users.
+    await Project.updateMany(
+      { members: userId },
+      { $pull: { members: userId } },
+    );
+
+    // Delete projects owned by this user.
+    await Project.deleteMany({
+      owner: userId,
+    });
+
+    // Permanently delete the user.
+    await User.findByIdAndDelete(userId);
+
+    // Clear the actual authentication cookie.
+    res.clearCookie(COOKIE_NAME, getClearedCookieOptions());
+
+    return res.status(200).json({
+      message: "Your account has been permanently deleted.",
+    });
+  } catch (error) {
+    next(error);
+  }
 }

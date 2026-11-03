@@ -93,20 +93,19 @@ export default function ExplorePage() {
             <div className="explore-page__filters">
               <SlidersHorizontal size={18} aria-hidden="true" />
 
-              <label className="explore-page__filters">
-                <span className="sr-only">Project status</span>
-
-                <select
-                  value={status}
-                  onChange={(event) => setStatus(event.target.value)}
-                >
-                  {STATUSES.map((item) => (
-                    <option key={item.value} value={item.value}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
+              <label className="explore-page__filter-control">
+                <span className="">Project status</span>
               </label>
+              <select
+                value={status}
+                onChange={(event) => setStatus(event.target.value)}
+              >
+                {STATUSES.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
