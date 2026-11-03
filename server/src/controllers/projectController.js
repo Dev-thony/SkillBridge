@@ -214,30 +214,24 @@ export async function getProject(req, res, next) {
 export async function updateProject(req, res, next) {
   try {
     if (!mongoose.isValidObjectId(req.params.id))
-      return res
-        .status(400)
-        .json({
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Project identifier is invalid.",
-          },
-        });
+      return res.status(400).json({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Project identifier is invalid.",
+        },
+      });
     const project = await Project.findById(req.params.id);
     if (!project)
-      return res
-        .status(404)
-        .json({
-          error: { code: "NOT_FOUND", message: "Project was not found." },
-        });
+      return res.status(404).json({
+        error: { code: "NOT_FOUND", message: "Project was not found." },
+      });
     if (!ownerOnly(project, req.user))
-      return res
-        .status(403)
-        .json({
-          error: {
-            code: "FORBIDDEN",
-            message: "Only the project owner can update this project.",
-          },
-        });
+      return res.status(403).json({
+        error: {
+          code: "FORBIDDEN",
+          message: "Only the project owner can update this project.",
+        },
+      });
 
     const result = validateProjectBody(req.body, true);
     if (typeof result === "string")
@@ -248,16 +242,45 @@ export async function updateProject(req, res, next) {
       result.memberLimit !== undefined &&
       result.memberLimit < project.members.length
     )
-      return res
-        .status(400)
-        .json({
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Member limit cannot be below the current member count.",
-          },
-        });
+      return res.status(400).json({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Member limit cannot be below the current member count.",
+        },
+      });
 
-    Object.assign(project, result);
+    // Preserve existing role occupancy when updating role requirements.
+    if (result.rolesNeeded !== undefined) {
+      const updatedRoles = result.rolesNeeded.map((role) => {
+        const existingRole = project.rolesNeeded.find(
+          (item) =>
+            item.role.trim().toLowerCase() === role.role.trim().toLowerCase(),
+        );
+
+        const filled = existingRole?.filled || 0;
+        const slots = role.slots ?? 1;
+
+        if (slots < filled) {
+          throw new Error(
+            `The number of slots for ${role.role} cannot be below its current members (${filled}).`,
+          );
+        }
+
+        return {
+          role: role.role.trim(),
+          skills: role.skills || [],
+          slots,
+          filled,
+        };
+      });
+
+      project.rolesNeeded = updatedRoles;
+    }
+
+    Object.assign(project, {
+      ...result,
+      rolesNeeded: project.rolesNeeded,
+    });
     project.status =
       project.members.length >= project.memberLimit
         ? "full"

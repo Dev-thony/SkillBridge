@@ -16,6 +16,7 @@ import CreateProjectPage from "./pages/CreateProjectPage";
 import OwnerDashboardPage from "./pages/OwnerDashboardPage";
 import ApplicantDashboardPage from "./pages/ApplicantDashboardPage";
 import SettingsPage from "./pages/SettingsPage";
+import EditProjectPage from "./pages/EditProjectPage";
 
 function NotFoundPage() {
   return (
@@ -46,6 +47,10 @@ export default function App() {
             <Route path="/applications" element={<ApplicantDashboardPage />} />
             <Route path="/profile/setup" element={<ProfileSetupPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route
+              path="/projects/:projectId/edit"
+              element={<EditProjectPage />}
+            />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
 

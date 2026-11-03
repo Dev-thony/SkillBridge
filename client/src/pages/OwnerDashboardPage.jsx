@@ -164,6 +164,10 @@ export default function OwnerDashboardPage() {
                   <div className="owner-dashboard__actions">
                     <Link to={`/projects/${project.id}`}>View project</Link>
 
+                    <Link to={`/projects/${project.id}/edit`}>
+                      Edit project
+                    </Link>
+
                     {project.status !== "closed" && (
                       <button
                         type="button"
