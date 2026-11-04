@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Layers3, Users, } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Badge, SkillTag } from "../components/ui";
 import { usePageMetadata } from "../hooks/usePageMetadata";
+import MemberCapacity from "../components/projects/MemberCapacity";
 
 import {
   getMyJoinRequests,
@@ -28,11 +29,13 @@ export default function ProjectDetailsPage() {
   const [project, setProject] = useState(null);
   const [requestStatus, setRequestStatus] = useState("");
   const [message, setMessage] = useState("");
+  const [selectedRoleId, setSelectedRoleId] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  const [removalMessage, setRemovalMessage] = useState("");
 
   usePageMetadata({
     title: project?.title || "Project Details",
@@ -69,6 +72,12 @@ export default function ProjectDetailsPage() {
       const result = await getProject(projectId);
       setProject(result);
 
+      const availableRole = result.rolesNeededDetails?.find(
+        (role) => (role.filled || 0) < (role.slots || 1),
+      );
+
+      setSelectedRoleId(availableRole?._id || "");
+
       if (isAuthenticated) {
         try {
           const requests = await getMyJoinRequests();
@@ -79,12 +88,14 @@ export default function ProjectDetailsPage() {
           );
 
           setRequestStatus(existing?.status || "");
+          setRemovalMessage(existing?.removalMessage || "");
         } catch {
           // Project details remain available if request history cannot load.
           setRequestStatus("");
         }
       } else {
         setRequestStatus("");
+        setRemovalMessage("");
       }
     } catch (loadError) {
       setError(loadError.message || "Unable to load this project.");
@@ -108,7 +119,10 @@ export default function ProjectDetailsPage() {
     setError("");
 
     try {
-      await submitJoinRequest(project.id, message);
+      await submitJoinRequest(project.id, {
+        message,
+        roleId: selectedRoleId,
+      });
 
       setRequestStatus("pending");
       setMessage("");
@@ -204,13 +218,26 @@ export default function ProjectDetailsPage() {
         ? "warning"
         : "neutral";
 
+  const isAlreadyMember = project.members?.some(
+    (member) => String(member._id || member.id || member) === String(user?.id),
+  );
+
+  const hasAvailableRole =
+    project.rolesNeededDetails?.length > 0
+      ? project.rolesNeededDetails.some(
+          (role) => (role.slots || 1) > (role.filled || 0),
+        )
+      : true;
+
   const canRequest =
     isAuthenticated &&
     !isOwner &&
+    !isAlreadyMember &&
     project.status === "open" &&
+    availablePositions > 0 &&
+    hasAvailableRole &&
     requestStatus !== "pending" &&
     requestStatus !== "approved";
-
   
   return (
     <main className="project-details-page">
@@ -272,6 +299,43 @@ export default function ProjectDetailsPage() {
 
               {project.rolesNeededDetails.length > 0 ? (
                 <div className="project-details-roles">
+                  {/* {canRequest &&
+                    !isOwner &&
+                    project.rolesNeededDetails.length > 0 && (
+                      <label
+                        htmlFor="join-role"
+                        className="project-details-role-select"
+                      >
+                        Select the role you want to join
+                        <select
+                          id="join-role"
+                          value={selectedRoleId}
+                          onChange={(event) =>
+                            setSelectedRoleId(event.target.value)
+                          }
+                          required
+                        >
+                          <option value="">Choose a role</option>
+
+                          {project.rolesNeededDetails.map((role) => {
+                            const remaining = Math.max(
+                              0,
+                              (role.slots || 1) - (role.filled || 0),
+                            );
+
+                            return (
+                              <option
+                                key={role._id}
+                                value={role._id}
+                                disabled={remaining === 0}
+                              >
+                                {role.role} — {remaining} position(s) available
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </label>
+                    )} */}
                   {project.rolesNeededDetails.map((role, index) => (
                     <div
                       className="project-details-role"
@@ -328,7 +392,7 @@ export default function ProjectDetailsPage() {
           >
             <div className="project-details-panel">
               <h2>Project overview</h2>
-
+              <MemberCapacity project={project} />
               <div className="project-details-stat">
                 <div className="project-details-stat-label">
                   <Users size={18} aria-hidden="true" />
@@ -339,7 +403,6 @@ export default function ProjectDetailsPage() {
                   {currentMemberCount}/{memberLimit}
                 </strong>
               </div>
-
               <div className="project-details-stat">
                 <div className="project-details-stat-label">
                   <Layers3 size={18} aria-hidden="true" />
@@ -348,9 +411,7 @@ export default function ProjectDetailsPage() {
 
                 <strong>{availablePositions}</strong>
               </div>
-
               <div className="project-details-divider" />
-
               {isOwner ? (
                 <>
                   <h3>Your project</h3>
@@ -415,42 +476,107 @@ export default function ProjectDetailsPage() {
                   <h3>Request approved</h3>
                   <p>Your request was approved.</p>
                 </>
-              ) : !canRequest ? (
-                <>
-                  <h3>Not accepting requests</h3>
-                  <p>This project is full or closed.</p>
-                </>
               ) : (
                 <>
-                  <h3>Interested in joining?</h3>
-
-                  <p>
-                    Tell the project owner briefly why you want to contribute.
-                  </p>
-
-                  <form onSubmit={handleJoinRequest}>
-                    <label htmlFor="join-message">Message (optional)</label>
-
-                    <textarea
-                      id="join-message"
-                      value={message}
-                      onChange={(event) => setMessage(event.target.value)}
-                      maxLength={1000}
-                      rows={4}
-                      placeholder="Introduce yourself and how you can contribute..."
-                    />
-
-                    <button
-                      type="submit"
-                      className="project-details-join"
-                      disabled={submitting}
+                  {requestStatus === "removed" && (
+                    <div
+                      className="project-details-removal-notice"
+                      role="status"
                     >
-                      {submitting ? "Sending..." : "Request to join"}
-                      {!submitting && (
-                        <ArrowRight size={17} aria-hidden="true" />
-                      )}
-                    </button>
-                  </form>
+                      <h3>You were removed from this project</h3>
+                      <p>Reason provided by the project owner:</p>
+
+                      <blockquote>
+                        {removalMessage || "No reason was provided."}
+                      </blockquote>
+
+                      <p>You can submit a new join request below.</p>
+                    </div>
+                  )}
+
+                  {canRequest ? (
+                    <>
+                      <h3>Interested in joining?</h3>
+
+                      <p>
+                        Tell the project owner briefly why you want to
+                        contribute.
+                      </p>
+
+                      <form onSubmit={handleJoinRequest}>
+                        {project.rolesNeededDetails?.length > 0 && (
+                          <label
+                            htmlFor="join-role"
+                            className="project-details-role-select"
+                          >
+                            Select the role you want to join
+                            <select
+                              id="join-role"
+                              value={selectedRoleId}
+                              onChange={(event) =>
+                                setSelectedRoleId(event.target.value)
+                              }
+                              required
+                            >
+                              <option value="">Choose a role</option>
+
+                              {project.rolesNeededDetails.map((role) => {
+                                const remaining = Math.max(
+                                  0,
+                                  (role.slots || 1) - (role.filled || 0),
+                                );
+
+                                return (
+                                  <option
+                                    key={role._id}
+                                    value={role._id}
+                                    disabled={remaining === 0}
+                                  >
+                                    {role.role} — {remaining} position(s)
+                                    available
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </label>
+                        )}
+
+                        <label htmlFor="join-message">Message (optional)</label>
+
+                        <textarea
+                          id="join-message"
+                          value={message}
+                          onChange={(event) => setMessage(event.target.value)}
+                          maxLength={1000}
+                          rows={4}
+                          placeholder="Introduce yourself and how you can contribute..."
+                        />
+
+                        <button
+                          type="submit"
+                          className="project-details-join"
+                          disabled={
+                            submitting ||
+                            (project.rolesNeededDetails?.length > 0 &&
+                              !selectedRoleId)
+                          }
+                        >
+                          {submitting ? "Sending..." : "Request to join"}
+                          {!submitting && (
+                            <ArrowRight size={17} aria-hidden="true" />
+                          )}
+                        </button>
+                      </form>
+                    </>
+                  ) : (
+                    <>
+                      <h3>Not accepting requests</h3>
+                      <p>
+                        This project is full or closed, or you are already a
+                        team member.
+                      </p>
+                    </>
+                  )}
                 </>
               )}
 

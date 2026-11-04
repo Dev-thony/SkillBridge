@@ -1,0 +1,119 @@
+
+.site-footer {
+  margin-top: 80px;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface, #ffffff);
+  color: var(--color-text, #182033);
+}
+
+.site-footer__container {
+  width: min(100% - 40px, 1160px);
+  margin-inline: auto;
+}
+
+.site-footer__main {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 48px;
+  padding: 56px 0 42px;
+}
+
+.site-footer__brand {
+  max-width: 390px;
+}
+
+.site-footer__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  color: inherit;
+  font-size: 1.25rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.site-footer__logo img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.site-footer__brand p {
+  margin: 16px 0 0;
+  color: var(--color-text-muted, #6b7280);
+  line-height: 1.8;
+}
+
+.site-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(36px, 8vw, 100px);
+}
+
+.site-footer__links > div {
+  display: grid;
+  align-content: start;
+  gap: 13px;
+}
+
+.site-footer__links h3 {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+}
+
+.site-footer__links a {
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.site-footer__links a:hover {
+  color: var(--color-primary, #6d28d9);
+}
+
+.site-footer__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 22px 0;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+.site-footer__bottom p {
+  margin: 0;
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.85rem;
+}
+
+.site-footer__bottom a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: inherit;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+@media (max-width: 600px) {
+  .site-footer__container {
+    width: min(100% - 32px, 1160px);
+  }
+
+  .site-footer__main {
+    flex-direction: column;
+    gap: 34px;
+    padding-top: 40px;
+  }
+
+  .site-footer__links {
+    justify-content: space-between;
+  }
+
+  .site-footer__bottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -38,8 +38,31 @@ const userSchema = new mongoose.Schema(
       github: { type: String, default: "" },
       linkedin: { type: String, default: "" },
       x: { type: String, default: "" },
+      website: { type: String, default: "" },
     },
     avatarUrl: { type: String, default: "" },
+    contact: {
+      phone: { type: String, default: "", maxlength: 30 },
+      location: { type: String, default: "", maxlength: 120 },
+      website: { type: String, default: "", maxlength: 500 },
+    },
+    resumeUrl: {
+      type: String,
+      default: "",
+      maxlength: 1000,
+    },
+    profileType: {
+      type: String,
+      enum: [
+        "developer",
+        "designer",
+        "company",
+        "student",
+        "freelancer",
+        "other",
+      ],
+      default: "developer",
+    },
     skills: {
       type: [String],
       default: [],

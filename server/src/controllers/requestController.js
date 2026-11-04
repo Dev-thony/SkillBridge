@@ -8,79 +8,135 @@ function isOwner(project, user) {
 
 export async function createRequest(req, res, next) {
   try {
-    if (!mongoose.isValidObjectId(req.params.id))
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({
         error: {
           code: "VALIDATION_ERROR",
           message: "Project identifier is invalid.",
         },
       });
-    const project = await Project.findById(req.params.id);
-    if (!project)
+    }
+
+    const project = await Project.findById(id);
+
+    if (!project) {
       return res.status(404).json({
         error: { code: "NOT_FOUND", message: "Project was not found." },
       });
-    if (isOwner(project, req.user))
+    }
+
+    if (isOwner(project, req.user)) {
       return res.status(409).json({
         error: {
           code: "CONFLICT",
           message: "You cannot request to join your own project.",
         },
       });
-    if (project.status !== "open")
+    }
+
+    if (project.status !== "open") {
       return res.status(409).json({
         error: {
           code: "CONFLICT",
           message: "This project is not accepting requests.",
         },
       });
+    }
+
+    if (project.members.length >= project.memberLimit) {
+      return res.status(409).json({
+        error: { code: "CONFLICT", message: "This project is full." },
+      });
+    }
+
     if (
       project.members.some(
         (member) => member.toString() === req.user._id.toString(),
       )
-    )
+    ) {
       return res.status(409).json({
         error: {
           code: "CONFLICT",
           message: "You are already a member of this project.",
         },
       });
+    }
 
     const existing = await JoinRequest.findOne({
       project: project._id,
       applicant: req.user._id,
       status: "pending",
     });
-    if (existing)
+
+    if (existing) {
       return res.status(409).json({
         error: {
           code: "CONFLICT",
           message: "You already have a pending request for this project.",
         },
       });
+    }
+
+    let selectedRole = null;
+
+    if (project.rolesNeeded.length > 0) {
+      const { roleId } = req.body || {};
+
+      if (!roleId || !mongoose.isValidObjectId(roleId)) {
+        return res.status(400).json({
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Please select a valid project role.",
+          },
+        });
+      }
+
+      selectedRole = project.rolesNeeded.id(roleId);
+
+      if (!selectedRole) {
+        return res.status(404).json({
+          error: {
+            code: "NOT_FOUND",
+            message: "The selected role was not found.",
+          },
+        });
+      }
+
+      if (selectedRole.filled >= selectedRole.slots) {
+        return res.status(409).json({
+          error: {
+            code: "CONFLICT",
+            message: "This role is already filled.",
+          },
+        });
+      }
+    }
 
     const message = req.body?.message;
+
     if (
       message !== undefined &&
       (typeof message !== "string" || message.length > 1000)
-    )
+    ) {
       return res.status(400).json({
         error: {
           code: "VALIDATION_ERROR",
           message: "Request message must be text with at most 1000 characters.",
         },
       });
+    }
 
     const request = await JoinRequest.create({
       project: project._id,
       applicant: req.user._id,
+      roleId: selectedRole?._id || null,
+      roleName: selectedRole?.role || "",
       message: typeof message === "string" ? message.trim() : "",
-      matchedSkills:
-        req.body?.matchedSkills?.filter?.(
-          (skill) => typeof skill === "string",
-        ) || [],
     });
-    res.status(201).json({
+
+    return res.status(201).json({
       data: { request },
       message: "Join request submitted successfully.",
     });
@@ -91,30 +147,37 @@ export async function createRequest(req, res, next) {
 
 export async function listProjectRequests(req, res, next) {
   try {
-    if (!mongoose.isValidObjectId(req.params.id))
+    if (!mongoose.isValidObjectId(req.params.id)) {
       return res.status(400).json({
         error: {
           code: "VALIDATION_ERROR",
           message: "Project identifier is invalid.",
         },
       });
+    }
+
     const project = await Project.findById(req.params.id);
-    if (!project)
+
+    if (!project) {
       return res.status(404).json({
         error: { code: "NOT_FOUND", message: "Project was not found." },
       });
-    if (!isOwner(project, req.user))
+    }
+
+    if (!isOwner(project, req.user)) {
       return res.status(403).json({
         error: {
           code: "FORBIDDEN",
           message: "Only the project owner can view join requests.",
         },
       });
+    }
 
     const requests = await JoinRequest.find({ project: project._id })
       .populate("applicant", "name email title skills avatarUrl")
       .sort({ createdAt: -1 });
-    res.status(200).json({ data: { requests } });
+
+    return res.status(200).json({ data: { requests } });
   } catch (error) {
     next(error);
   }
@@ -170,7 +233,7 @@ export async function reviewRequest(req, res, next) {
         throw error;
       }
 
-      if (project.owner.toString() !== req.user._id.toString()) {
+      if (!isOwner(project, req.user)) {
         const error = new Error("Only the project owner can review requests.");
         error.status = 403;
         throw error;
@@ -183,11 +246,11 @@ export async function reviewRequest(req, res, next) {
           throw error;
         }
 
-        const alreadyMember = project.members.some(
-          (member) => member.toString() === request.applicant.toString(),
-        );
-
-        if (alreadyMember) {
+        if (
+          project.members.some(
+            (member) => member.toString() === request.applicant.toString(),
+          )
+        ) {
           const error = new Error("Applicant is already a project member.");
           error.status = 409;
           throw error;
@@ -197,6 +260,37 @@ export async function reviewRequest(req, res, next) {
           const error = new Error("Project is full.");
           error.status = 409;
           throw error;
+        }
+
+        if (project.rolesNeeded.length > 0) {
+          let selectedRole = request.roleId
+            ? project.rolesNeeded.id(request.roleId)
+            : null;
+
+          // Support older pending requests created before role selection.
+          if (!selectedRole && !request.roleId) {
+            selectedRole = project.rolesNeeded.find(
+              (role) => role.filled < role.slots,
+            );
+          }
+
+          if (!selectedRole) {
+            const error = new Error(
+              "The selected role is no longer available.",
+            );
+            error.status = 409;
+            throw error;
+          }
+
+          if (selectedRole.filled >= selectedRole.slots) {
+            const error = new Error("This role is already full.");
+            error.status = 409;
+            throw error;
+          }
+
+          selectedRole.filled += 1;
+          request.roleId = selectedRole._id;
+          request.roleName = selectedRole.role;
         }
 
         project.members.push(request.applicant);
@@ -212,14 +306,11 @@ export async function reviewRequest(req, res, next) {
       request.reviewedAt = new Date();
 
       await request.save({ session });
-
       reviewedRequest = request;
     });
 
     return res.status(200).json({
-      data: {
-        request: reviewedRequest,
-      },
+      data: { request: reviewedRequest },
       message: `Join request ${status}.`,
     });
   } catch (error) {
@@ -287,7 +378,6 @@ export async function withdrawRequest(req, res, next) {
 
     request.status = "withdrawn";
     request.reviewedAt = new Date();
-
     await request.save();
 
     return res.status(200).json({

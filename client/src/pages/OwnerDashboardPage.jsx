@@ -1,21 +1,56 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./OwnerDashboardPage.css";
+import MemberCapacity from "../components/projects/MemberCapacity";
 
 import {
   closeProject,
   getProjectRequests,
   listMyProjects,
   reviewJoinRequest,
+  removeProjectMember,
 } from "../services/projectService";
 
 export default function OwnerDashboardPage() {
   const [projects, setProjects] = useState([]);
   const [requestsByProject, setRequestsByProject] = useState({});
+  const [busyMember, setBusyMember] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyRequest, setBusyRequest] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+
+  
+  async function handleRemoveMember(projectId, memberId) {
+    const removalMessage = window.prompt(
+      "Explain why you are removing this member. This message will be visible to them:",
+    );
+
+    if (removalMessage === null) return;
+
+    if (removalMessage.trim().length < 5) {
+      setError("Please provide a removal reason of at least 5 characters.");
+      return;
+    }
+
+    const actionKey = `${projectId}:${memberId}`;
+
+    setBusyMember(actionKey);
+    setError("");
+    setNotice("");
+
+    try {
+      await removeProjectMember(projectId, memberId, removalMessage.trim());
+
+      setNotice("Member removed and removal message sent.");
+      await loadDashboard();
+    } catch (removeError) {
+      setError(removeError.message || "Unable to remove this member.");
+    } finally {
+      setBusyMember("");
+    }
+  }
+
 
   const loadDashboard = useCallback(async () => {
     try {
@@ -159,6 +194,8 @@ export default function OwnerDashboardPage() {
                     <small>
                       {project.memberCount}/{project.teamCapacity} members
                     </small>
+
+                    <MemberCapacity project={project} />
                   </div>
 
                   <div className="owner-dashboard__actions">
@@ -179,6 +216,48 @@ export default function OwnerDashboardPage() {
                   </div>
                 </div>
 
+                <div className="owner-dashboard__members">
+                  <h3>Team members ({project.memberCount})</h3>
+
+                  {(project.members || [])
+                    .filter(
+                      (member) =>
+                        String(member._id || member.id) !==
+                        String(project.ownerId),
+                    )
+                    .map((member) => {
+                      const memberId = member._id || member.id;
+                      const actionKey = `${project.id}:${memberId}`;
+
+                      return (
+                        <div className="owner-dashboard__member" key={memberId}>
+                          <div>
+                            <strong>{member.name || "Team member"}</strong>
+                            {member.title && <p>{member.title}</p>}
+                          </div>
+
+                          <button
+                            type="button"
+                            disabled={busyMember === actionKey}
+                            onClick={() =>
+                              handleRemoveMember(project.id, memberId)
+                            }
+                          >
+                            {busyMember === actionKey
+                              ? "Removing..."
+                              : "Remove member"}
+                          </button>
+                        </div>
+                      );
+                    })}
+
+                  {!(project.members || []).some(
+                    (member) =>
+                      String(member._id || member.id) !==
+                      String(project.ownerId),
+                  ) && <p>No other members have joined yet.</p>}
+                </div>
+
                 <div className="owner-dashboard__requests">
                   <h3>Join requests ({pendingRequests.length} pending)</h3>
                   {projectRequests && !Array.isArray(projectRequests) && (
@@ -196,11 +275,23 @@ export default function OwnerDashboardPage() {
                       >
                         <div>
                           <strong>
-                            {request.applicant?.name || "Applicant"}
+                            {request.applicant?._id ? (
+                              <Link to={`/users/${request.applicant._id}`}>
+                                {request.applicant.name}
+                              </Link>
+                            ) : (
+                              request.applicant?.name || "Applicant"
+                            )}
                           </strong>
 
                           {request.applicant?.title && (
                             <p>{request.applicant.title}</p>
+                          )}
+
+                          {request.roleName && (
+                            <p className="owner-dashboard__applied-role">
+                              Applied for: <strong>{request.roleName}</strong>
+                            </p>
                           )}
 
                           {request.applicant?.skills?.length > 0 && (

@@ -245,13 +245,25 @@
 
 @media (max-width: 900px) {
   .project-details-layout {
-    grid-template-columns: 1fr;
-    gap: 32px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+
+  .project-details-main,
+  .project-details-sidebar {
+    width: 100%;
+    min-width: 0;
   }
 
   .project-details-sidebar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .project-details-panel {
+    width: 100%;
+    min-width: 0;
   }
 }
 
@@ -384,5 +396,194 @@
 
   .project-details-actions-pro .project-details-join {
     min-height: 48px;
+  }
+}
+
+
+.profile-setup__avatar {
+  width: 112px;
+  height: 112px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 50%;
+  background: var(--color-surface-muted, #f3f4f6);
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.75rem;
+}
+
+.profile-setup__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+.member-capacity {
+  display: grid;
+  gap: 18px;
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--color-surface, #ffffff);
+}
+
+.member-capacity h3,
+.member-capacity h4 {
+  margin: 0;
+}
+
+.member-capacity__roles {
+  display: grid;
+  gap: 16px;
+}
+
+.member-capacity__role {
+  display: grid;
+  gap: 9px;
+}
+
+.member-capacity__role > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.875rem;
+}
+
+.member-capacity__role > div:first-child span {
+  color: var(--color-text-muted, #6b7280);
+}
+
+.sb-progress {
+  display: grid;
+  gap: 7px;
+}
+
+.sb-progress__heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.8rem;
+}
+
+.sb-progress__track {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--color-border, #e5e7eb);
+}
+
+.sb-progress__value {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary, #6d28d9);
+  transition: width 0.2s ease;
+}
+
+.project-details-removal-notice {
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--color-surface-muted, #f3f4f6);
+}
+
+.project-details-removal-notice blockquote {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--color-primary, #6d28d9);
+  background: var(--color-surface, #fff);
+}
+
+.project-details-role-select {
+  display: grid;
+  gap: 9px;
+  margin-bottom: 18px;
+}
+
+.project-details-role-select select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 9px;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #182033);
+  font: inherit;
+}
+
+.member-capacity__role-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.member-capacity__role-heading span {
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.8rem;
+}
+
+/* Responsive project details and participation panel */
+.project-details-container,
+.project-details-layout,
+.project-details-main,
+.project-details-sidebar {
+  min-width: 0;
+}
+
+.project-details-panel form {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.project-details-panel form label {
+  display: grid;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.project-details-panel form textarea,
+.project-details-panel form select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.project-details-panel form textarea {
+  resize: vertical;
+}
+
+.project-details-panel button,
+.project-details-panel a {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .project-details-container {
+    width: calc(100% - 32px);
+  }
+
+  .project-details-panel {
+    padding: 18px;
+  }
+
+  .project-details-stat {
+    flex-wrap: wrap;
+  }
+
+  .project-details-role {
+    align-items: flex-start;
   }
 }

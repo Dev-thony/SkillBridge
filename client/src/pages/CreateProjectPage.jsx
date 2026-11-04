@@ -1,8 +1,11 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import "./ProjectForm.css";
-
-import { createProject } from "../services/projectService";
+import {
+  createProject,
+  getProject,
+  updateProject,
+} from "../services/projectService";
 
 const INITIAL_FORM = {
   title: "",
@@ -28,20 +31,61 @@ function splitCommaSeparated(value) {
     .filter(Boolean);
 }
 
+function formatRoles(roles = []) {
+  return roles
+    .map(
+      (role) =>
+        `${role.role} (${role.slots || 1})${
+          role.skills?.length ? `: ${role.skills.join(", ")}` : ""
+        }`,
+    )
+    .join("\n");
+}
+
 export default function CreateProjectPage() {
   const navigate = useNavigate();
+  const { projectId } = useParams();
+  const isEditing = Boolean(projectId);
 
   const [form, setForm] = useState(INITIAL_FORM);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(isEditing);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!isEditing) return;
+
+    let active = true;
+
+    getProject(projectId)
+      .then((project) => {
+        if (!active) return;
+
+        setForm({
+          title: project.title || "",
+          shortDescription: project.shortDescription || project.summary || "",
+          description: project.description || "",
+          goals: (project.goals || []).join("\n"),
+          techStack: (project.technologies || []).join(", "),
+          rolesNeeded: formatRoles(project.rolesNeededDetails),
+          memberLimit: String(project.teamCapacity || 5),
+        });
+      })
+      .catch((err) => {
+        if (active) setError(err.message || "Unable to load project.");
+      })
+      .finally(() => {
+        if (active) setInitialLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isEditing, projectId]);
 
   function updateField(event) {
     const { name, value } = event.target;
-
-    setForm((current) => ({
-      ...current,
-      [name]: value,
-    }));
+    setForm((current) => ({ ...current, [name]: value }));
   }
 
   async function handleSubmit(event) {
@@ -50,17 +94,23 @@ export default function CreateProjectPage() {
     setError("");
 
     const rolesNeeded = splitLines(form.rolesNeeded).map((line) => {
-      const [roleName, ...skillParts] = line.split(":");
+      const [rolePart, ...skillParts] = line.split(":");
+      const match = rolePart.trim().match(/^(.*?)\s*\((\d+)\)\s*$/);
 
       return {
-        role: roleName.trim(),
+        role: (match ? match[1] : rolePart).trim(),
+        slots: match ? Number(match[2]) : 1,
         skills: skillParts.length
           ? splitCommaSeparated(skillParts.join(":"))
           : [],
-        slots: 1,
-        filled: 0,
       };
     });
+
+    if (rolesNeeded.some((role) => !role.role || role.slots < 1)) {
+      setError("Check your role names and required number of people.");
+      setLoading(false);
+      return;
+    }
 
     const projectData = {
       title: form.title.trim(),
@@ -73,13 +123,28 @@ export default function CreateProjectPage() {
     };
 
     try {
-      const project = await createProject(projectData);
+      const project = isEditing
+        ? await updateProject(projectId, projectData)
+        : await createProject(projectData);
+
       navigate(`/projects/${project.id}`, { replace: true });
-    } catch (submitError) {
-      setError(submitError.message || "Unable to create project.");
+    } catch (err) {
+      setError(
+        err.message || `Unable to ${isEditing ? "update" : "create"} project.`,
+      );
     } finally {
       setLoading(false);
     }
+  }
+
+  if (initialLoading) {
+    return (
+      <main className="project-form-page">
+        <div className="project-form-container">
+          <p>Loading project...</p>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -87,7 +152,7 @@ export default function CreateProjectPage() {
       <div className="project-form-container">
         <header>
           <p className="explore-page__eyebrow">BUILD SOMETHING TOGETHER</p>
-          <h1>Create a project</h1>
+          <h1>{isEditing ? "Edit project" : "Create a project"}</h1>
           <p>
             Describe your idea, the skills you need, and the team you want to
             build.
@@ -104,7 +169,6 @@ export default function CreateProjectPage() {
               minLength={3}
               maxLength={100}
               required
-              placeholder="e.g. Community learning platform"
             />
           </label>
 
@@ -118,7 +182,6 @@ export default function CreateProjectPage() {
               maxLength={240}
               rows={3}
               required
-              placeholder="Explain what the project does in a few sentences."
             />
           </label>
 
@@ -130,7 +193,6 @@ export default function CreateProjectPage() {
               onChange={updateField}
               maxLength={5000}
               rows={6}
-              placeholder="Describe the problem, proposed solution, and current progress."
             />
           </label>
 
@@ -141,7 +203,6 @@ export default function CreateProjectPage() {
               value={form.goals}
               onChange={updateField}
               rows={4}
-              placeholder={"Build the MVP\nRecruit early users"}
             />
           </label>
 
@@ -151,7 +212,6 @@ export default function CreateProjectPage() {
               name="techStack"
               value={form.techStack}
               onChange={updateField}
-              placeholder="React, Node.js, MongoDB"
             />
           </label>
 
@@ -161,14 +221,13 @@ export default function CreateProjectPage() {
               name="rolesNeeded"
               value={form.rolesNeeded}
               onChange={updateField}
-              rows={4}
+              rows={5}
               placeholder={
-                "Frontend Developer: React, CSS\nUI/UX Designer: Figma\nBackend Developer: Node.js, MongoDB"
+                "Frontend Developer (2): React, CSS\nUI/UX Designer (1): Figma"
               }
             />
             <small>
-              Format: role name, optionally followed by a colon and
-              comma-separated skills.
+              Format: Role name (number of people needed): skill 1, skill 2.
             </small>
           </label>
 
@@ -195,7 +254,9 @@ export default function CreateProjectPage() {
             <button
               type="button"
               className="sb-button sb-button--secondary"
-              onClick={() => navigate("/explore")}
+              onClick={() =>
+                navigate(isEditing ? `/projects/${projectId}` : "/explore")
+              }
               disabled={loading}
             >
               Cancel
@@ -206,7 +267,11 @@ export default function CreateProjectPage() {
               className="sb-button sb-button--primary"
               disabled={loading}
             >
-              {loading ? "Creating project..." : "Create project"}
+              {loading
+                ? "Saving..."
+                : isEditing
+                  ? "Save changes"
+                  : "Create project"}
             </button>
           </div>
         </form>

@@ -8,6 +8,7 @@ import {
   listOwnProjects,
   listProjects,
   updateProject,
+  removeProjectMember,
 } from "../controllers/projectController.js";
 
 import {
@@ -32,6 +33,7 @@ router.post("/", requireAuth, createProject);
 // Project details and owner actions.
 router.get("/:id", getProject);
 router.patch("/:id", requireAuth, updateProject);
+router.delete("/:id/members/:memberId", requireAuth, removeProjectMember);
 router.patch("/:id/close", requireAuth, closeProject);
 router.delete("/:id", requireAuth, deleteProject);
 

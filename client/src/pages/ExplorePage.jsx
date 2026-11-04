@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { ProjectCard } from "../components/ui";
 import { listProjects } from "../services/projectService";
 import { usePageMetadata } from "../hooks/usePageMetadata";
 import "./ExplorePage.css";
+import ProjectFilters from "../components/projects/ProjectFilters";
 
-const STATUSES = [
-  { label: "All statuses", value: "all" },
-  { label: "Open", value: "open" },
-  { label: "Full", value: "full" },
-  { label: "Closed", value: "closed" },
-];
+// const STATUSES = [
+//   { label: "All statuses", value: "all" },
+//   { label: "Open", value: "open" },
+//   { label: "Full", value: "full" },
+//   { label: "Closed", value: "closed" },
+// ];
 
 export default function ExplorePage() {
   const [query, setQuery] = useState("");
@@ -87,33 +87,13 @@ export default function ExplorePage() {
 
         <section className="explore-page__browser" aria-label="Browse projects">
           <div className="explore-page__toolbar">
-            <label className="explore-page__search">
-              <Search size={19} aria-hidden="true" />
-              <input
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search projects, roles or technologies"
-              />
-            </label>
-
-            <div className="explore-page__filters">
-              <SlidersHorizontal size={18} aria-hidden="true" />
-
-              <label className="explore-page__filter-control">
-                <span className="">Project status</span>
-              </label>
-              <select
-                value={status}
-                onChange={(event) => setStatus(event.target.value)}
-              >
-                {STATUSES.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <ProjectFilters
+              search={query}
+              status={status}
+              onSearchChange={setQuery}
+              onStatusChange={setStatus}
+              onReset={resetFilters}
+            />
           </div>
 
           <div className="explore-page__meta">

@@ -55,7 +55,13 @@ app.use(async (req, res, next) => {
     await connectDB();
     next();
   } catch (error) {
-    next(error);
+    console.error("Database unavailable:", error.message);
+
+    const databaseError = new Error("Database unavailable.");
+    databaseError.status = 503;
+    databaseError.code = "DATABASE_UNAVAILABLE";
+
+    next(databaseError);
   }
 });
 

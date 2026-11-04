@@ -12,6 +12,6 @@ const router = express.Router();
 router.get("/me/requests", requireAuth, getOwnRequests);
 router.patch("/me", requireAuth, updateOwnProfile);
 router.delete("/me", requireAuth, deleteMyAccount);
-router.get("/:id", getPublicUser);
+router.get("/:id", requireAuth, getPublicUser);
 
 export default router;

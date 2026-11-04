@@ -1,16 +1,30 @@
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 
+
 async function projectRequest(path, options = {}) {
   const headers = {
     "Content-Type": "application/json",
     ...options.headers,
   };
 
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    credentials: "include",
-    headers,
-  });
+  let response;
+
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      credentials: "include",
+      headers,
+    });
+  } catch {
+    const error = new Error(
+      navigator.onLine === false
+        ? "You appear to be offline. Reconnect and try again."
+        : "Unable to connect to SkillBridge. Please check your connection and try again.",
+    );
+
+    error.code = "NETWORK_ERROR";
+    throw error;
+  }
 
   const data = await response.json().catch(() => ({}));
 
@@ -123,6 +137,18 @@ export async function updateProject(projectId, projectData) {
   return normalizeProject(response.data.project);
 }
 
+export async function removeProjectMember(projectId, memberId, removalMessage) {
+  const response = await projectRequest(
+    `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(memberId)}`,
+    {
+      method: "DELETE",
+      body: JSON.stringify({ removalMessage }),
+    },
+  );
+
+  return normalizeProject(response.data.project);
+}
+
 export const closeProject = async (projectId) => {
   const response = await projectRequest(`/projects/${projectId}/close`, {
     method: "PATCH",
@@ -137,17 +163,22 @@ export const deleteProject = async (projectId) => {
   });
 };
 
-export async function submitJoinRequest(projectId, message = "") {
+
+export async function submitJoinRequest(
+  projectId,
+  { message = "", roleId = "" } = {},
+) {
   const response = await projectRequest(
     `/projects/${encodeURIComponent(projectId)}/requests`,
     {
       method: "POST",
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message, roleId }),
     },
   );
 
   return response.data.request;
 }
+
 
 export async function getProjectRequests(projectId) {
   const response = await projectRequest(

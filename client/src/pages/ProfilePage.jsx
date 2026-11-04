@@ -25,6 +25,7 @@ import "./ProfilePage.css";
 
 const socialLabels = {
   portfolio: "Portfolio",
+  website: "Company website",
   github: "GitHub",
   linkedin: "LinkedIn",
   x: "X / Twitter",
@@ -178,6 +179,25 @@ export default function ProfilePage() {
               )}
             </section>
 
+            {(user.contact?.phone || user.contact?.location) && (
+              <section className="profile-section">
+                <div className="profile-section__heading">
+                  <div className="profile-section__icon">
+                    <UserRound size={19} />
+                  </div>
+                  <h3>Contact information</h3>
+                </div>
+
+                {user.contact?.phone && (
+                  <p>Phone / WhatsApp: {user.contact.phone}</p>
+                )}
+
+                {user.contact?.location && (
+                  <p>Location: {user.contact.location}</p>
+                )}
+              </section>
+            )}
+
             <section className="profile-section">
               <div className="profile-section__heading">
                 <div className="profile-section__icon">
@@ -220,6 +240,24 @@ export default function ProfilePage() {
                 </p>
               )}
             </section>
+
+            {user.resumeUrl && (
+              <section className="profile-section">
+                <div className="profile-section__heading">
+                  <h3>Resume / CV</h3>
+                </div>
+
+                <a
+                  href={user.resumeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="profile-link"
+                >
+                  View my resume / CV
+                  <ArrowUpRight size={16} />
+                </a>
+              </section>
+            )}
           </div>
 
           <footer className="profile-card__footer">

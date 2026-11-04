@@ -16,10 +16,13 @@ export function publicUser(user) {
     email: user.email,
     bio: user.bio,
     title: user.title,
-    skills: user.skills,
-    interests: user.interests,
-    links: user.links,
-    avatarUrl: user.avatarUrl,
+    profileType: user.profileType || "developer",
+    skills: user.skills || [],
+    interests: user.interests || [],
+    links: user.links || {},
+    contact: user.contact || {},
+    avatarUrl: user.avatarUrl || "",
+    resumeUrl: user.resumeUrl || "",
     profileCompleted: user.profileCompleted,
   };
 }

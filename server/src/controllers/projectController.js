@@ -211,90 +211,141 @@ export async function getProject(req, res, next) {
   }
 }
 
+
 export async function updateProject(req, res, next) {
   try {
-    if (!mongoose.isValidObjectId(req.params.id))
+    if (!mongoose.isValidObjectId(req.params.id)) {
       return res.status(400).json({
         error: {
           code: "VALIDATION_ERROR",
           message: "Project identifier is invalid.",
         },
       });
+    }
+
     const project = await Project.findById(req.params.id);
-    if (!project)
+
+    if (!project) {
       return res.status(404).json({
         error: { code: "NOT_FOUND", message: "Project was not found." },
       });
-    if (!ownerOnly(project, req.user))
+    }
+
+    if (!ownerOnly(project, req.user)) {
       return res.status(403).json({
         error: {
           code: "FORBIDDEN",
           message: "Only the project owner can update this project.",
         },
       });
+    }
 
     const result = validateProjectBody(req.body, true);
-    if (typeof result === "string")
-      return res
-        .status(400)
-        .json({ error: { code: "VALIDATION_ERROR", message: result } });
+
+    if (typeof result === "string") {
+      return res.status(400).json({
+        error: { code: "VALIDATION_ERROR", message: result },
+      });
+    }
+
     if (
       result.memberLimit !== undefined &&
       result.memberLimit < project.members.length
-    )
+    ) {
       return res.status(400).json({
         error: {
           code: "VALIDATION_ERROR",
           message: "Member limit cannot be below the current member count.",
         },
       });
+    }
 
-    // Preserve existing role occupancy when updating role requirements.
     if (result.rolesNeeded !== undefined) {
-      const updatedRoles = result.rolesNeeded.map((role) => {
+      const updatedRoles = [];
+
+      for (const incomingRole of result.rolesNeeded) {
         const existingRole = project.rolesNeeded.find(
-          (item) =>
-            item.role.trim().toLowerCase() === role.role.trim().toLowerCase(),
+          (role) =>
+            role.role.trim().toLowerCase() ===
+            incomingRole.role.trim().toLowerCase(),
         );
 
         const filled = existingRole?.filled || 0;
-        const slots = role.slots ?? 1;
+        const slots = incomingRole.slots ?? 1;
 
         if (slots < filled) {
-          throw new Error(
-            `The number of slots for ${role.role} cannot be below its current members (${filled}).`,
-          );
+          return res.status(409).json({
+            error: {
+              code: "CONFLICT",
+              message: `${incomingRole.role} has ${filled} assigned members. Its capacity cannot be reduced below that number.`,
+            },
+          });
         }
 
-        return {
-          role: role.role.trim(),
-          skills: role.skills || [],
+        updatedRoles.push({
+          _id: existingRole?._id,
+          role: incomingRole.role.trim(),
+          skills: incomingRole.skills || [],
           slots,
           filled,
-        };
-      });
+        });
+      }
+
+      const removedOccupiedRole = project.rolesNeeded.find(
+        (oldRole) =>
+          oldRole.filled > 0 &&
+          !updatedRoles.some(
+            (newRole) => newRole._id?.toString() === oldRole._id.toString(),
+          ),
+      );
+
+      if (removedOccupiedRole) {
+        return res.status(409).json({
+          error: {
+            code: "CONFLICT",
+            message: `You cannot remove ${removedOccupiedRole.role} while members are assigned to it.`,
+          },
+        });
+      }
 
       project.rolesNeeded = updatedRoles;
     }
 
-    Object.assign(project, {
-      ...result,
-      rolesNeeded: project.rolesNeeded,
-    });
-    project.status =
-      project.members.length >= project.memberLimit
-        ? "full"
-        : project.status === "closed"
-          ? "closed"
-          : "open";
+    if (result.title !== undefined) project.title = result.title;
+    if (result.shortDescription !== undefined) {
+      project.shortDescription = result.shortDescription;
+    }
+    if (result.description !== undefined) {
+      project.description = result.description;
+    }
+    if (result.goals !== undefined) project.goals = result.goals;
+    if (result.techStack !== undefined) {
+      project.techStack = result.techStack;
+    }
+    if (result.memberLimit !== undefined) {
+      project.memberLimit = result.memberLimit;
+    }
+
+    if (project.status !== "closed") {
+      project.status =
+        project.members.length >= project.memberLimit ? "full" : "open";
+    }
+
     await project.save();
-    res
-      .status(200)
-      .json({ data: { project }, message: "Project updated successfully." });
+
+    const updatedProject = await Project.findById(project._id)
+      .populate("owner", "name title avatarUrl")
+      .populate("members", "name title avatarUrl");
+
+    return res.status(200).json({
+      data: { project: updatedProject },
+      message: "Project updated successfully.",
+    });
   } catch (error) {
     next(error);
   }
 }
+
 
 export async function closeProject(req, res, next) {
   try {
@@ -380,3 +431,125 @@ export const deleteProject = async (req, res) => {
     });
   }
 };
+
+
+
+export async function removeProjectMember(req, res, next) {
+  const { id, memberId } = req.params;
+  const removalMessage = req.body?.removalMessage?.trim();
+
+  if (!mongoose.isValidObjectId(id) || !mongoose.isValidObjectId(memberId)) {
+    return res.status(400).json({
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Project or member identifier is invalid.",
+      },
+    });
+  }
+
+  if (
+    typeof removalMessage !== "string" ||
+    removalMessage.length < 5 ||
+    removalMessage.length > 1000
+  ) {
+    return res.status(400).json({
+      error: {
+        code: "VALIDATION_ERROR",
+        message:
+          "Please provide a removal reason between 5 and 1000 characters.",
+      },
+    });
+  }
+
+  const session = await mongoose.startSession();
+
+  try {
+    let updatedProject;
+
+    await session.withTransaction(async () => {
+      const project = await Project.findById(id).session(session);
+
+      if (!project) {
+        const error = new Error("Project was not found.");
+        error.status = 404;
+        throw error;
+      }
+
+      if (!ownerOnly(project, req.user)) {
+        const error = new Error("Only the project owner can remove members.");
+        error.status = 403;
+        throw error;
+      }
+
+      if (project.owner.toString() === memberId) {
+        const error = new Error("The project owner cannot be removed.");
+        error.status = 400;
+        throw error;
+      }
+
+      const memberExists = project.members.some(
+        (member) => member.toString() === memberId,
+      );
+
+      if (!memberExists) {
+        const error = new Error("This user is not a project member.");
+        error.status = 404;
+        throw error;
+      }
+
+      const approvedRequest = await JoinRequest.findOne({
+        project: project._id,
+        applicant: memberId,
+        status: "approved",
+      })
+        .sort({ reviewedAt: -1 })
+        .session(session);
+
+      if (approvedRequest?.roleId) {
+        const role = project.rolesNeeded.id(approvedRequest.roleId);
+
+        if (role) {
+          role.filled = Math.max(0, role.filled - 1);
+        }
+      }
+
+      if (approvedRequest) {
+        approvedRequest.status = "removed";
+        approvedRequest.removalMessage = removalMessage;
+        approvedRequest.reviewedAt = new Date();
+        await approvedRequest.save({ session });
+      }
+
+      project.members.pull(memberId);
+
+      if (project.status === "full") {
+        project.status = "open";
+      }
+
+      await project.save({ session });
+      updatedProject = project;
+    });
+
+    updatedProject = await Project.findById(updatedProject._id)
+      .populate("owner", "name title avatarUrl")
+      .populate("members", "name title avatarUrl");
+
+    return res.status(200).json({
+      data: { project: updatedProject },
+      message: "Member removed successfully.",
+    });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({
+        error: {
+          code: error.status === 403 ? "FORBIDDEN" : "VALIDATION_ERROR",
+          message: error.message,
+        },
+      });
+    }
+
+    return next(error);
+  } finally {
+    await session.endSession();
+  }
+}

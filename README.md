@@ -634,7 +634,7 @@ Create a local `server/.env` from this example and fill in your own values. Neve
 `client/.env.example`:
 
 ```dotenv
-VITE_API_BASE_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:5000/api
 ```
 
 For Vite, only variables prefixed with `VITE_` are exposed to browser code. **Never put secrets in `VITE_` variables.** Configure production environment variables in the deployment provider dashboard.
@@ -821,3 +821,163 @@ Before work starts, each developer should confirm:
 - [ ] Loading, empty, validation, success, and error states exist.
 - [ ] The owner and contributor prototype flows are clickable from start to finish.
 - [ ] The design is feasible for the team to implement with React and CSS in one week.
+
+---
+
+## 15 Current Repository Implementation
+
+### Project structure
+
+SkillBridge is organised as a frontend/backend monorepo.
+
+- `client/` — React and Vite application.
+- `server/` — Express API and Mongoose models.
+- `docs/` — product scope, API contract, database schema, user flows, QA and demo documentation.
+
+### Image storage
+
+- Cloudinary for profile images.
+- MongoDB stores the resulting image URL.
+
+## Running the existing project
+
+### 1. Clone and enter the repository
+
+```bash
+git clone YOUR_REPOSITORY_URL
+cd SkillBridge
+```
+
+### 2. Start the backend
+
+```bash
+cd server
+npm install
+```
+
+Create `server/.env` using `server/.env.example`.
+
+Start the backend:
+
+```bash
+npm run dev
+```
+
+The local API runs on port 5000.
+
+### 3. Start the frontend
+
+Open another terminal:
+
+```bash
+cd client
+npm install
+```
+
+Create `client/.env` using `client/.env.example`.
+
+Start the frontend:
+
+```bash
+npm run dev
+```
+
+Vite normally runs at `http://localhost:5173`.
+
+<!-- ## Environment variables -->
+
+### Backend — `server/.env`
+
+```env
+PORT=5000
+NODE_ENV=development
+
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_long_random_secret
+
+CLIENT_ORIGIN=http://localhost:5173
+
+DNS_SERVERS=8.8.8.8,1.1.1.1
+```
+
+### Frontend — `client/.env`
+
+```env
+VITE_API_URL=http://localhost:5000/api
+VITE_SITE_URL=http://localhost:5173
+
+VITE_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_unsigned_upload_preset
+```
+
+Only public Cloudinary configuration belongs in frontend variables. Never expose Cloudinary API secrets, JWT secrets or database credentials through `VITE_` variables.
+
+## Project collaboration rules
+
+- Only project owners can edit or close their projects.
+- Only project owners can review requests and remove members.
+- Applicants select an available role when applying to a role-based project.
+- Project capacity is enforced by the backend.
+- Role occupancy is updated when requests are approved and members are removed.
+- Closed projects cannot receive new requests.
+- Account deletion cleans up owned projects and related membership data.
+
+## Important implementation notes
+
+- MongoDB transactions require a replica set or transaction-capable deployment.
+- Cloudinary profile uploads require a configured unsigned upload preset.
+- Dynamic project social previews need server-side or pre-rendered metadata; changing document metadata in React alone does not guarantee correct social crawler previews.
+- Production deployment requires separate frontend and backend environment configuration.
+- Do not commit `.env` files or credentials.
+
+## Documentation
+
+- `docs/NEXT-IMPLEMENTATION-MILESTONE.md`
+- `docs/EMPTY-FILES-IMPLEMENTATION.md`
+- `docs/api-contract.md`
+- `docs/database-schema.md`
+- `docs/product-scope.md`
+- `docs/user-flows.md`
+- `docs/demo-script.md`
+- `docs/qa-checklist.md`
+
+## Available scripts
+
+Frontend:
+
+```bash
+npm run dev
+npm run build
+npm run lint
+npm run preview
+```
+
+Backend:
+
+```bash
+npm run dev
+npm start
+npm run seed
+```
+
+### Cloudinary profile image and CV configuration
+
+The frontend uses these public environment variables:
+
+- `VITE_CLOUDINARY_CLOUD_NAME`
+- `VITE_CLOUDINARY_UPLOAD_PRESET`
+- `VITE_CLOUDINARY_RESUME_UPLOAD_PRESET`
+
+Create separate unsigned presets for profile images and raw documents.
+
+Profile images:
+
+- JPG, PNG and WebP.
+- Maximum 5MB.
+
+CV documents:
+
+- PDF, DOC and DOCX.
+- Maximum 10MB.
+
+Never place a Cloudinary API secret in frontend environment variables.

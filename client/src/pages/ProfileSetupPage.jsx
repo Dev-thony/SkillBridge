@@ -1,15 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { useAuth } from "../context/AuthContext";
+import { uploadAvatar, uploadResume } from "../services/avatarService";
 import "./ProfileSetupPage.css";
 
 const emptyProfile = {
   name: "",
+  profileType: "developer",
   title: "",
   bio: "",
   skills: "",
   interests: "",
+  phone: "",
+  location: "",
+  website: "",
   portfolio: "",
   github: "",
   linkedin: "",
@@ -18,11 +22,16 @@ const emptyProfile = {
 
 function profileToForm(user) {
   return {
+    ...emptyProfile,
     name: user?.name || "",
+    profileType: user?.profileType || "developer",
     title: user?.title || "",
     bio: user?.bio || "",
     skills: (user?.skills || []).join(", "),
     interests: (user?.interests || []).join(", "),
+    phone: user?.contact?.phone || "",
+    location: user?.contact?.location || "",
+    website: user?.links?.website || user?.contact?.website || "",
     portfolio: user?.links?.portfolio || "",
     github: user?.links?.github || "",
     linkedin: user?.links?.linkedin || "",
@@ -41,6 +50,17 @@ function splitList(value) {
   ];
 }
 
+const individualTypes = ["developer", "designer", "student", "freelancer"];
+
+const typeLabels = {
+  developer: "Developer",
+  designer: "Designer",
+  company: "Company / Startup",
+  student: "Student",
+  freelancer: "Freelancer",
+  other: "Other",
+};
+
 export default function ProfileSetupPage() {
   const { user, loading, updateProfile } = useAuth();
   const navigate = useNavigate();
@@ -48,15 +68,31 @@ export default function ProfileSetupPage() {
   const [form, setForm] = useState(() =>
     user ? profileToForm(user) : emptyProfile,
   );
-  const [previousUser, setPreviousUser] = useState(user);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl || "");
+  const [resumeFile, setResumeFile] = useState(null);
 
-  if (user && user !== previousUser) {
-    setPreviousUser(user);
+  const isIndividual = individualTypes.includes(form.profileType);
+  const isCompany = form.profileType === "company";
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Synchronise the form when the authenticated user finishes loading.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm(profileToForm(user));
-  }
+    setAvatarPreview(user.avatarUrl || "");
+  }, [user]);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+    };
+  }, [avatarPreview]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -67,60 +103,127 @@ export default function ProfileSetupPage() {
     }));
 
     setError("");
-    setSuccess("");
+  }
+
+  function handleAvatarChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("Choose a JPG, PNG or WebP profile image.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Profile images must be 5MB or smaller.");
+      event.target.value = "";
+      return;
+    }
+
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+    setError("");
+  }
+
+  function handleResumeChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError("Your CV must be a PDF, DOC or DOCX file.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError("Your CV must be 10MB or smaller.");
+      event.target.value = "";
+      return;
+    }
+
+    setResumeFile(file);
+    setError("");
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
-
     setError("");
-    setSuccess("");
 
-    const cleanName = form.name.trim();
-    const cleanTitle = form.title.trim();
-    const cleanBio = form.bio.trim();
+    const name = form.name.trim();
 
-    if (cleanName.length < 2 || cleanName.length > 80) {
+    if (name.length < 2 || name.length > 80) {
       setError("Your name must contain between 2 and 80 characters.");
       return;
     }
 
-    if (cleanTitle.length > 100) {
-      setError("Your professional title cannot exceed 100 characters.");
+    if (form.profileType === "other" && !form.title.trim()) {
+      setError("Please specify your professional title.");
       return;
     }
 
-    if (cleanBio.length > 500) {
-      setError("Your bio cannot exceed 500 characters.");
+    if (isIndividual && splitList(form.skills).length === 0) {
+      setError("Please add your skills.");
       return;
     }
 
-    const profileData = {
-      name: cleanName,
-      title: cleanTitle,
-      bio: cleanBio,
-      skills: splitList(form.skills),
-      interests: splitList(form.interests),
-      links: {
-        portfolio: form.portfolio.trim(),
-        github: form.github.trim(),
-        linkedin: form.linkedin.trim(),
-        x: form.x.trim(),
-      },
-      profileCompleted: true,
-    };
+    if (isIndividual && splitList(form.interests).length === 0) {
+      setError("Please add your interests.");
+      return;
+    }
+
+    if (isCompany && !form.website.trim()) {
+      setError("Please add your company or startup website.");
+      return;
+    }
 
     setSaving(true);
 
     try {
-      await updateProfile(profileData);
-      setSuccess("Your profile has been saved successfully.");
+      const avatarUrl = avatarFile
+        ? await uploadAvatar(avatarFile)
+        : user.avatarUrl || "";
 
+      const resumeUrl = resumeFile
+        ? await uploadResume(resumeFile)
+        : user.resumeUrl || "";
+
+      const profileData = {
+        name,
+        profileType: form.profileType,
+        title:
+          form.profileType === "other"
+            ? form.title.trim()
+            : typeLabels[form.profileType],
+        bio: form.bio.trim(),
+        skills: isIndividual ? splitList(form.skills) : [],
+        interests: isIndividual ? splitList(form.interests) : [],
+        contact: {
+          phone: form.phone.trim(),
+          location: form.location.trim(),
+        },
+        links: {
+          portfolio: isIndividual ? form.portfolio.trim() : "",
+          website: isCompany ? form.website.trim() : "",
+          github: isCompany || isIndividual ? form.github.trim() : "",
+          linkedin: isIndividual ? form.linkedin.trim() : "",
+          x: isIndividual ? form.x.trim() : "",
+        },
+        avatarUrl,
+        resumeUrl,
+        profileCompleted: true,
+      };
+
+      await updateProfile(profileData);
       navigate("/profile", { replace: true });
     } catch (saveError) {
-      setError(
-        saveError.message || "Unable to save your profile. Please try again.",
-      );
+      setError(saveError.message || "Unable to save your profile.");
     } finally {
       setSaving(false);
     }
@@ -152,12 +255,10 @@ export default function ProfileSetupPage() {
           <span className="profile-setup__eyebrow">
             YOUR SKILLBRIDGE PROFILE
           </span>
-
           <h1>Tell us about yourself</h1>
-
           <p>
-            Share your skills, interests, and experience so other developers can
-            discover you and collaborate with you.
+            Choose your professional category and add information relevant to
+            your profile.
           </p>
         </header>
 
@@ -170,16 +271,25 @@ export default function ProfileSetupPage() {
           </div>
         )}
 
-        {success && (
-          <div
-            className="profile-setup__message profile-setup__message--success"
-            role="status"
-          >
-            {success}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit}>
+          <div className="profile-setup__field">
+            <label htmlFor="avatar">Profile image</label>
+            <div className="profile-setup__avatar">
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Profile preview" />
+              ) : (
+                <span>No image selected</span>
+              )}
+            </div>
+            <input
+              id="avatar"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={handleAvatarChange}
+            />
+            <small>JPG, PNG or WebP. Maximum 5MB.</small>
+          </div>
+
           <div className="profile-setup__field">
             <label htmlFor="name">Full name *</label>
             <input
@@ -187,23 +297,43 @@ export default function ProfileSetupPage() {
               name="name"
               value={form.name}
               onChange={handleChange}
+              required
               minLength={2}
               maxLength={80}
-              required
             />
           </div>
 
           <div className="profile-setup__field">
-            <label htmlFor="title">Professional title</label>
-            <input
-              id="title"
-              name="title"
-              value={form.title}
+            <label htmlFor="profileType">Professional category *</label>
+            <select
+              id="profileType"
+              name="profileType"
+              value={form.profileType}
               onChange={handleChange}
-              maxLength={100}
-              placeholder="e.g. Frontend Developer"
-            />
+              required
+            >
+              {Object.entries(typeLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
           </div>
+
+          {form.profileType === "other" && (
+            <div className="profile-setup__field">
+              <label htmlFor="title">Specify your professional title *</label>
+              <input
+                id="title"
+                name="title"
+                value={form.title}
+                onChange={handleChange}
+                maxLength={100}
+                placeholder="e.g. Product Manager"
+                required
+              />
+            </div>
+          )}
 
           <div className="profile-setup__field">
             <label htmlFor="bio">About you</label>
@@ -214,86 +344,179 @@ export default function ProfileSetupPage() {
               onChange={handleChange}
               maxLength={500}
               rows={5}
-              placeholder="Tell other developers about yourself..."
+              placeholder="Tell other people about yourself or your organisation..."
             />
-            <small>{form.bio.length}/500 characters</small>
+          </div>
+
+          {isIndividual && (
+            <>
+              <div className="profile-setup__divider">
+                <h2>Skills and interests</h2>
+                <p>These help project owners discover your profile.</p>
+              </div>
+
+              <div className="profile-setup__field">
+                <label htmlFor="skills">Skills *</label>
+                <input
+                  id="skills"
+                  name="skills"
+                  value={form.skills}
+                  onChange={handleChange}
+                  placeholder="JavaScript, React, Node.js"
+                  required
+                />
+                <small>Separate skills with commas.</small>
+              </div>
+
+              <div className="profile-setup__field">
+                <label htmlFor="interests">Interests *</label>
+                <input
+                  id="interests"
+                  name="interests"
+                  value={form.interests}
+                  onChange={handleChange}
+                  placeholder="Open source, Web development"
+                  required
+                />
+                <small>Separate interests with commas.</small>
+              </div>
+            </>
+          )}
+
+          <div className="profile-setup__divider">
+            <h2>Contact information</h2>
+            <p>Share the best way to reach you.</p>
           </div>
 
           <div className="profile-setup__field">
-            <label htmlFor="skills">Skills</label>
+            <label htmlFor="phone">Phone / WhatsApp number</label>
             <input
-              id="skills"
-              name="skills"
-              value={form.skills}
+              id="phone"
+              name="phone"
+              type="tel"
+              value={form.phone}
               onChange={handleChange}
-              placeholder="JavaScript, React, Node.js"
+              placeholder="+234..."
             />
-            <small>Separate skills with commas.</small>
           </div>
 
           <div className="profile-setup__field">
-            <label htmlFor="interests">Interests</label>
+            <label htmlFor="location">Location</label>
             <input
-              id="interests"
-              name="interests"
-              value={form.interests}
+              id="location"
+              name="location"
+              value={form.location}
               onChange={handleChange}
-              placeholder="Open source, Web development"
+              placeholder="City, Country"
             />
-            <small>Separate interests with commas.</small>
           </div>
 
           <div className="profile-setup__divider">
-            <h2>Links</h2>
-            <p>Help other developers find your work online.</p>
+            <h2>Professional links</h2>
+          </div>
+
+          {isCompany ? (
+            <>
+              <div className="profile-setup__field">
+                <label htmlFor="website">Company website *</label>
+                <input
+                  id="website"
+                  name="website"
+                  type="url"
+                  value={form.website}
+                  onChange={handleChange}
+                  placeholder="https://yourcompany.com"
+                  required
+                />
+              </div>
+
+              <div className="profile-setup__field">
+                <label htmlFor="github">GitHub URL (optional)</label>
+                <input
+                  id="github"
+                  name="github"
+                  type="url"
+                  value={form.github}
+                  onChange={handleChange}
+                  placeholder="https://github.com/yourcompany"
+                />
+              </div>
+            </>
+          ) : isIndividual ? (
+            <>
+              <div className="profile-setup__field">
+                <label htmlFor="portfolio">Portfolio URL</label>
+                <input
+                  id="portfolio"
+                  name="portfolio"
+                  type="url"
+                  value={form.portfolio}
+                  onChange={handleChange}
+                  placeholder="https://yourportfolio.com"
+                />
+              </div>
+
+              <div className="profile-setup__field">
+                <label htmlFor="github">GitHub URL</label>
+                <input
+                  id="github"
+                  name="github"
+                  type="url"
+                  value={form.github}
+                  onChange={handleChange}
+                  placeholder="https://github.com/username"
+                />
+              </div>
+
+              <div className="profile-setup__field">
+                <label htmlFor="linkedin">LinkedIn URL</label>
+                <input
+                  id="linkedin"
+                  name="linkedin"
+                  type="url"
+                  value={form.linkedin}
+                  onChange={handleChange}
+                  placeholder="https://www.linkedin.com/in/username"
+                />
+              </div>
+
+              <div className="profile-setup__field">
+                <label htmlFor="x">X profile URL</label>
+                <input
+                  id="x"
+                  name="x"
+                  type="url"
+                  value={form.x}
+                  onChange={handleChange}
+                  placeholder="https://x.com/username"
+                />
+              </div>
+            </>
+          ) : null}
+
+          <div className="profile-setup__divider">
+            <h2>Resume / CV</h2>
+            <p>
+              Optional. Upload a CV to help project owners understand your
+              experience.
+            </p>
           </div>
 
           <div className="profile-setup__field">
-            <label htmlFor="portfolio">Portfolio URL</label>
+            <label htmlFor="resume">Upload CV</label>
             <input
-              id="portfolio"
-              name="portfolio"
-              type="url"
-              value={form.portfolio}
-              onChange={handleChange}
-              placeholder="https://yourportfolio.com"
+              id="resume"
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={handleResumeChange}
             />
-          </div>
-
-          <div className="profile-setup__field">
-            <label htmlFor="github">GitHub URL</label>
-            <input
-              id="github"
-              name="github"
-              type="url"
-              value={form.github}
-              onChange={handleChange}
-              placeholder="https://github.com/username"
-            />
-          </div>
-
-          <div className="profile-setup__field">
-            <label htmlFor="linkedin">LinkedIn URL</label>
-            <input
-              id="linkedin"
-              name="linkedin"
-              type="url"
-              value={form.linkedin}
-              onChange={handleChange}
-              placeholder="https://www.linkedin.com/in/username"
-            />
-          </div>
-
-          <div className="profile-setup__field">
-            <label htmlFor="x">X profile URL</label>
-            <input
-              id="x"
-              name="x"
-              type="url"
-              value={form.x}
-              onChange={handleChange}
-              placeholder="https://x.com/username"
-            />
+            <small>PDF, DOC or DOCX. Maximum 10MB.</small>
+            {user.resumeUrl && !resumeFile && (
+              <a href={user.resumeUrl} target="_blank" rel="noreferrer">
+                View current CV
+              </a>
+            )}
+            {resumeFile && <small>Selected: {resumeFile.name}</small>}
           </div>
 
           <div className="profile-setup__actions">

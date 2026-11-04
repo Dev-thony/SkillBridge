@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Navbar from "./components/layout/Navbar";
+import Footer from "./components/layout/Footer";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 import { AuthProvider } from "./context/AuthContext";
@@ -16,7 +17,7 @@ import CreateProjectPage from "./pages/CreateProjectPage";
 import OwnerDashboardPage from "./pages/OwnerDashboardPage";
 import ApplicantDashboardPage from "./pages/ApplicantDashboardPage";
 import SettingsPage from "./pages/SettingsPage";
-import EditProjectPage from "./pages/EditProjectPage";
+import PublicProfilePage from "./pages/PublicProfilePage";
 
 function NotFoundPage() {
   return (
@@ -38,24 +39,27 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/projects/:projectId" element={<ProjectDetailsPage />} />
+          <Route path="/users/:userId" element={<PublicProfilePage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
 
           <Route element={<ProtectedRoute />}>
             <Route path="/projects/new" element={<CreateProjectPage />} />
+            <Route
+              path="/projects/:projectId/edit"
+              element={<CreateProjectPage />}
+            />
             <Route path="/dashboard" element={<OwnerDashboardPage />} />
             <Route path="/applications" element={<ApplicantDashboardPage />} />
             <Route path="/profile/setup" element={<ProfileSetupPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route
-              path="/projects/:projectId/edit"
-              element={<EditProjectPage />}
-            />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+
+        <Footer />
       </AuthProvider>
     </BrowserRouter>
   );
