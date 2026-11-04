@@ -204,7 +204,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="landing-footer">
+      {/* <footer className="landing-footer">
         <div className="container landing-footer__inner">
           <Link to="/" className="navbar__brand" aria-label="SkillBridge home">
             <img
@@ -221,7 +221,7 @@ export default function LandingPage() {
             <Link to="/login">Log in</Link>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </main>
   );
 }
