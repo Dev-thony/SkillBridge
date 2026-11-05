@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Link } from "react-router-dom";
 
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -18,13 +18,31 @@ import OwnerDashboardPage from "./pages/OwnerDashboardPage";
 import ApplicantDashboardPage from "./pages/ApplicantDashboardPage";
 import SettingsPage from "./pages/SettingsPage";
 import PublicProfilePage from "./pages/PublicProfilePage";
+import "./styles/not-found.css";
 
 function NotFoundPage() {
   return (
-    <main className="container" style={{ paddingBlock: "64px" }}>
-      <h1>Page not found</h1>
-      <p>The page you're looking for doesn't exist.</p>
-      <a href="/explore">Explore projects</a>
+    <main className="not-found-page">
+      <div className="not-found-card">
+        <span className="not-found-code">404</span>
+
+        <h1>Oops! Page not found.</h1>
+
+        <p>
+          The page you're looking for may have been moved, removed, or doesn't
+          exist.
+        </p>
+
+        <div className="not-found-actions">
+          <Link to="/explore" className="not-found-primary">
+            Explore projects
+          </Link>
+
+          <Link to="/" className="not-found-secondary">
+            Back to home
+          </Link>
+        </div>
+      </div>
     </main>
   );
 }
