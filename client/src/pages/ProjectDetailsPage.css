@@ -587,3 +587,70 @@
     align-items: flex-start;
   }
 }
+
+
+/* =========================================
+   PROJECT DETAILS — FINAL RESPONSIVE FIX
+   ========================================= */
+
+.project-details-layout,
+.project-details-main,
+.project-details-sidebar {
+  min-width: 0;
+}
+
+.project-details-role {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.project-details-role > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.project-details-panel {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.project-details-actions-pro,
+.project-details-join,
+.project-details-close {
+  max-width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .project-details-container {
+    width: calc(100% - 28px);
+  }
+
+  .project-details-layout {
+    gap: 22px;
+  }
+
+  .project-details-header h1 {
+    font-size: clamp(27px, 8vw, 36px);
+    overflow-wrap: anywhere;
+  }
+
+  .project-details-section {
+    padding-block: 24px;
+  }
+
+  .project-details-role {
+    align-items: flex-start;
+    padding: 14px;
+  }
+
+  .project-details-panel {
+    padding: 18px;
+  }
+
+  .project-details-panel button,
+  .project-details-panel a {
+    width: 100%;
+  }
+}

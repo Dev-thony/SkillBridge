@@ -64,6 +64,217 @@ button:focus-visible,
 a:focus-visible,
 
 select:focus-visible,
+/* =========================================
+   SKILLBRIDGE — RESPONSIVE STABILITY FIX
+   ========================================= */
+
+#root,
+main,
+section,
+article,
+.container {
+  min-width: 0;
+}
+
+img,
+video,
+iframe {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+input,
+select,
+textarea {
+  min-width: 0;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+a,
+strong,
+span {
+  overflow-wrap: break-word;
+}
+
+.sb-project-card,
+.owner-dashboard__project,
+.owner-dashboard__request,
+.applicant-dashboard__card,
+.profile-card,
+.settings-page__card,
+.project-details-panel {
+  min-width: 0;
+}
+
+.owner-dashboard__project > *,
+.owner-dashboard__request > *,
+.applicant-dashboard__card > *,
+.profile-card > * {
+  min-width: 0;
+}
+
+/* Tablet navigation: prevent desktop links from
+   becoming cramped between tablet breakpoints. */
+@media (min-width: 769px) and (max-width: 2560px) {
+  .site-header__inner {
+    /* flex-wrap: wrap; */
+    padding-block: 5px;
+  }
+
+  .site-nav--desktop {
+    flex: 1 1 100%;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .site-nav__links,
+  .site-nav__actions {
+    flex-wrap: wrap;
+  }
+
+  .site-nav__links {
+    padding-top: 23px;
+  }
+}
+
+/* Dashboard responsiveness */
+@media (max-width: 768px) {
+  .owner-dashboard,
+  .applicant-dashboard {
+    padding-top: 32px;
+    padding-bottom: 56px;
+  }
+
+  .owner-dashboard__header,
+  .owner-dashboard__project-heading,
+  .owner-dashboard__request,
+  .applicant-dashboard__header,
+  .applicant-dashboard__card-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .owner-dashboard__request-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .owner-dashboard__request-actions button {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  .owner-dashboard__actions {
+    flex-wrap: wrap;
+  }
+
+  .applicant-dashboard__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .applicant-dashboard__card {
+    padding: 20px;
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 480px) {
+  .container {
+    width: calc(100% - 28px);
+  }
+
+  .owner-dashboard__project,
+  .owner-dashboard__empty {
+    padding: 18px;
+  }
+
+  .owner-dashboard__request {
+    padding: 14px 0;
+  }
+
+  .owner-dashboard__request-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .applicant-dashboard__stats {
+    gap: 10px;
+  }
+
+  .applicant-dashboard__stats article {
+    padding: 14px;
+  }
+
+  .applicant-dashboard__stats strong {
+    font-size: 1.5rem;
+  }
+
+  .applicant-dashboard__card {
+    padding: 16px;
+  }
+
+  .profile-card__content {
+    padding-inline: 16px;
+  }
+
+  .settings-page__account,
+  .settings-section {
+    padding-inline: 16px;
+  }
+
+  .project-details-container {
+    width: calc(100% - 28px);
+  }
+}
+
+/* Very narrow devices */
+@media (max-width: 360px) {
+  .applicant-dashboard__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-card__identity {
+    padding-inline: 14px;
+  }
+
+  .profile-card__content {
+    padding-inline: 14px;
+  }
+
+  .settings-delete-dialog {
+    padding: 20px 14px;
+  }
+}
+
+/* Prevent long URLs and user-generated content
+   from stretching project cards. */
+.profile-link,
+.owner-dashboard__request,
+.project-details-summary,
+.applicant-dashboard__message {
+  overflow-wrap: anywhere;
+}
+
+/* Accessible touch targets */
+@media (pointer: coarse) {
+  .site-nav__link,
+  .mobile-navigation-drawer__link,
+  .navbar-profile-menu__dropdown a,
+  .navbar-profile-menu__dropdown button {
+    min-height: 44px;
+  }
+}
+
 textarea:focus-visible {
   outline: 3px solid var(--color-brand);
   outline-offset: 3px;
@@ -101,7 +312,7 @@ html {
 
 body {
   min-width: 320px;
-  overflow-x: clip;
+  
 }
 
 #root {
@@ -127,5 +338,218 @@ body {
 @media (max-width: 360px) {
   .container {
     width: calc(100% - 24px);
+  }
+}
+
+
+/* =========================================
+   SKILLBRIDGE — RESPONSIVE STABILITY FIX
+   ========================================= */
+
+#root,
+main,
+section,
+article,
+.container {
+  min-width: 0;
+}
+
+img,
+video,
+iframe {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+input,
+select,
+textarea {
+  min-width: 0;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+a,
+strong,
+span {
+  overflow-wrap: break-word;
+}
+
+.sb-project-card,
+.owner-dashboard__project,
+.owner-dashboard__request,
+.applicant-dashboard__card,
+.profile-card,
+.settings-page__card,
+.project-details-panel {
+  min-width: 0;
+}
+
+.owner-dashboard__project > *,
+.owner-dashboard__request > *,
+.applicant-dashboard__card > *,
+.profile-card > * {
+  min-width: 0;
+}
+
+/* Tablet navigation: prevent desktop links from
+   becoming cramped between tablet breakpoints. */
+@media (min-width: 769px) and (max-width: 2560px) {
+  .site-header__inner {
+    /* flex-wrap: wrap; */
+    padding-block: 5px;
+  }
+
+  .site-nav--desktop {
+    flex: 1 1 100%;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .site-nav__links,
+  .site-nav__actions {
+    flex-wrap: wrap;
+  }
+
+  .site-nav__links {
+    padding-top: 23px;
+  }
+}
+
+
+/* Dashboard responsiveness */
+@media (max-width: 768px) {
+  .owner-dashboard,
+  .applicant-dashboard {
+    padding-top: 32px;
+    padding-bottom: 56px;
+  }
+
+  .owner-dashboard__header,
+  .owner-dashboard__project-heading,
+  .owner-dashboard__request,
+  .applicant-dashboard__header,
+  .applicant-dashboard__card-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .owner-dashboard__request-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .owner-dashboard__request-actions button {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  .owner-dashboard__actions {
+    flex-wrap: wrap;
+  }
+
+  .applicant-dashboard__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .applicant-dashboard__card {
+    padding: 20px;
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 480px) {
+  .container {
+    width: calc(100% - 28px);
+  }
+
+  .owner-dashboard__project,
+  .owner-dashboard__empty {
+    padding: 18px;
+  }
+
+  .owner-dashboard__request {
+    padding: 14px 0;
+  }
+
+  .owner-dashboard__request-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .applicant-dashboard__stats {
+    gap: 10px;
+  }
+
+  .applicant-dashboard__stats article {
+    padding: 14px;
+  }
+
+  .applicant-dashboard__stats strong {
+    font-size: 1.5rem;
+  }
+
+  .applicant-dashboard__card {
+    padding: 16px;
+  }
+
+  .profile-card__content {
+    padding-inline: 16px;
+  }
+
+  .settings-page__account,
+  .settings-section {
+    padding-inline: 16px;
+  }
+
+  .project-details-container {
+    width: calc(100% - 28px);
+  }
+}
+
+/* Very narrow devices */
+@media (max-width: 360px) {
+  .applicant-dashboard__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-card__identity {
+    padding-inline: 14px;
+  }
+
+  .profile-card__content {
+    padding-inline: 14px;
+  }
+
+  .settings-delete-dialog {
+    padding: 20px 14px;
+  }
+}
+
+/* Prevent long URLs and user-generated content
+   from stretching project cards. */
+.profile-link,
+.owner-dashboard__request,
+.project-details-summary,
+.applicant-dashboard__message {
+  overflow-wrap: anywhere;
+}
+
+/* Accessible touch targets */
+@media (pointer: coarse) {
+  .site-nav__link,
+  .mobile-navigation-drawer__link,
+  .navbar-profile-menu__dropdown a,
+  .navbar-profile-menu__dropdown button {
+    min-height: 44px;
   }
 }
